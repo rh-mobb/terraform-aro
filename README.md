@@ -2,8 +2,6 @@
 
 Azure Red Hat OpenShift (ARO) is a fully-managed turnkey application platform.
 
-## Create the AWS Virtual Private Cloud (VPCs), Pub/Private Subnets and TGW
-
 ### Setup
 
 Using the code in the repo will require having the following tools installed:
