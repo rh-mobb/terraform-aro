@@ -1,0 +1,4 @@
+**.tfstate*
+/*.json
+.terraform*
+*.plan
