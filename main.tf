@@ -21,8 +21,9 @@ resource "azurerm_subnet" "control_plane_subnet" {
   resource_group_name     = azurerm_resource_group.main.name
   virtual_network_name    = azurerm_virtual_network.main.name
   address_prefixes        = [var.aro_control_subnet_cidr_block]
-  service_endpoints       = ["Microsoft.ContainerRegistry"]
-  enforce_private_link_service_network_policies = false
+  service_endpoints       = ["Microsoft.Storage", "Microsoft.ContainerRegistry"]
+  enforce_private_link_service_network_policies = true
+  enforce_private_link_endpoint_network_policies = true
 }
 
 resource "azurerm_subnet" "machine_subnet" {
@@ -30,7 +31,7 @@ resource "azurerm_subnet" "machine_subnet" {
   resource_group_name   = azurerm_resource_group.main.name
   virtual_network_name  = azurerm_virtual_network.main.name
   address_prefixes      = [var.aro_machine_subnet_cidr_block]
-  service_endpoints     = ["Microsoft.ContainerRegistry"]
+  service_endpoints     = ["Microsoft.Storage", "Microsoft.ContainerRegistry"]
 }
 
 ## ARO Cluster
