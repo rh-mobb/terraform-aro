@@ -58,7 +58,7 @@ resource "azureopenshift_redhatopenshift_cluster" "cluster" {
   ]
 }
 
-resource "shell_script" "aro_cluster" {
+resource "shell_script" "day2ops" {
 
   lifecycle_commands {
     create = templatefile(
