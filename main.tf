@@ -58,7 +58,7 @@ resource "azureopenshift_redhatopenshift_cluster" "cluster" {
   ]
 }
 
-resource "shell_script" "rosa_cluster" {
+resource "shell_script" "aro_cluster" {
 
   lifecycle_commands {
     create = templatefile(
@@ -81,35 +81,3 @@ resource "shell_script" "rosa_cluster" {
     })
   }
 }
-
-## E2E GitOps Cluster
-# resource "null_resource" "e2e" {
-
-#   # provisioner "file" {
-#   #   destination = "/tmp/script.sh"
-#   #   content = templatefile(
-#   #     "${path.module}/templates/e2e.tftpl",
-#   #     {
-#   #       cluster_name        = var.cluster_name,
-#   #       resource_group_name = azurerm_resource_group.main.name
-#   #   })
-#   # }
-
-
-#   provisioner "local-exec" {
-
-#     command = "/bin/bash -x ${path.module}/scripts/e2e.sh"
-
-#     environment = {
-#       cluster_name        = var.cluster_name,
-#       resource_group_name = azurerm_resource_group.main.name
-#     }
-#   }
-
-#   # This is necessary to ensure *all*  module resources are built
-#   # before end2end GitOps is launched
-#   depends_on = [
-#     azureopenshift_redhatopenshift_cluster.cluster
-#   ]
-# }
-
