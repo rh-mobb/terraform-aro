@@ -41,16 +41,25 @@ resource "azureopenshift_redhatopenshift_cluster" "cluster" {
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
   tags                = var.tags
+
   master_profile {
     subnet_id = azurerm_subnet.control_plane_subnet.id
   }
+
   worker_profile {
     subnet_id = azurerm_subnet.machine_subnet.id
   }
+
   service_principal {
     client_id     = azuread_application.cluster.application_id
     client_secret = azuread_application_password.cluster.value
   }
+
+
+  cluster_profile {
+    pull_secret = file(var.pull_secret_path)
+  }
+
   depends_on = [
     azurerm_subnet.machine_subnet,
     azurerm_subnet.control_plane_subnet,
@@ -80,4 +89,8 @@ resource "shell_script" "day2ops" {
         resource_group_name = azurerm_resource_group.main.name
     })
   }
+
+  depends_on = [
+    azureopenshift_redhatopenshift_cluster.cluster
+  ]
 }

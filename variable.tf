@@ -5,10 +5,10 @@ variable "cluster_name" {
 }
 
 variable "tags" {
-  type        = map(string)
-  default     = {
+  type = map(string)
+  default = {
     environment = "development"
-    owner = "your@email.address"
+    owner       = "your@email.address"
   }
 }
 
@@ -40,4 +40,10 @@ variable "aro_machine_subnet_cidr_block" {
   type        = string
   default     = "10.0.2.0/23"
   description = "cidr range for aro machine subnet"
+}
+
+variable "pull_secret_path" {
+  type        = string
+  default     = "~/Downloads/pull-secret.txt"
+  description = "path for the pull secret for ARO"
 }

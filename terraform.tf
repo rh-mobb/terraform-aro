@@ -29,7 +29,6 @@ provider "azurerm" {
 
 }
 
-
 provider "azureopenshift" {}
 
 provider "shell" {
