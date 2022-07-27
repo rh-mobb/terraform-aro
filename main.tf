@@ -1,37 +1,37 @@
 locals {
-    name_prefix = var.cluster_name
+  name_prefix = var.cluster_name
 }
 
 resource "azurerm_resource_group" "main" {
-    name        = "${local.name_prefix}-rg"
-    location    = var.location
+  name     = "${local.name_prefix}-rg"
+  location = var.location
 }
 
 ## Network resources
 resource "azurerm_virtual_network" "main" {
-    name                = "${local.name_prefix}-vnet"
-    location            = azurerm_resource_group.main.location
-    resource_group_name = azurerm_resource_group.main.name
-    address_space       = [var.aro_virtual_network_cidr_block]
-    tags                = var.tags
+  name                = "${local.name_prefix}-vnet"
+  location            = azurerm_resource_group.main.location
+  resource_group_name = azurerm_resource_group.main.name
+  address_space       = [var.aro_virtual_network_cidr_block]
+  tags                = var.tags
 }
 
 resource "azurerm_subnet" "control_plane_subnet" {
-  name                    = "${local.name_prefix}-cp-subnet"
-  resource_group_name     = azurerm_resource_group.main.name
-  virtual_network_name    = azurerm_virtual_network.main.name
-  address_prefixes        = [var.aro_control_subnet_cidr_block]
-  service_endpoints       = ["Microsoft.Storage", "Microsoft.ContainerRegistry"]
-  enforce_private_link_service_network_policies = true
+  name                                           = "${local.name_prefix}-cp-subnet"
+  resource_group_name                            = azurerm_resource_group.main.name
+  virtual_network_name                           = azurerm_virtual_network.main.name
+  address_prefixes                               = [var.aro_control_subnet_cidr_block]
+  service_endpoints                              = ["Microsoft.Storage", "Microsoft.ContainerRegistry"]
+  enforce_private_link_service_network_policies  = true
   enforce_private_link_endpoint_network_policies = true
 }
 
 resource "azurerm_subnet" "machine_subnet" {
-  name                  = "${local.name_prefix}-machine-subnet"
-  resource_group_name   = azurerm_resource_group.main.name
-  virtual_network_name  = azurerm_virtual_network.main.name
-  address_prefixes      = [var.aro_machine_subnet_cidr_block]
-  service_endpoints     = ["Microsoft.Storage", "Microsoft.ContainerRegistry"]
+  name                 = "${local.name_prefix}-machine-subnet"
+  resource_group_name  = azurerm_resource_group.main.name
+  virtual_network_name = azurerm_virtual_network.main.name
+  address_prefixes     = [var.aro_machine_subnet_cidr_block]
+  service_endpoints    = ["Microsoft.Storage", "Microsoft.ContainerRegistry"]
 }
 
 ## ARO Cluster
@@ -57,3 +57,59 @@ resource "azureopenshift_redhatopenshift_cluster" "cluster" {
     azurerm_role_assignment.vnet
   ]
 }
+
+resource "shell_script" "rosa_cluster" {
+
+  lifecycle_commands {
+    create = templatefile(
+      "${path.module}/templates/e2e.tftpl",
+      {
+        cluster_name        = var.cluster_name,
+        resource_group_name = azurerm_resource_group.main.name
+    })
+    delete = templatefile(
+      "${path.module}/templates/e2e.tftpl",
+      {
+        cluster_name        = var.cluster_name,
+        resource_group_name = azurerm_resource_group.main.name
+    })
+    read = templatefile(
+      "${path.module}/templates/e2e.tftpl",
+      {
+        cluster_name        = var.cluster_name,
+        resource_group_name = azurerm_resource_group.main.name
+    })
+  }
+}
+
+## E2E GitOps Cluster
+# resource "null_resource" "e2e" {
+
+#   # provisioner "file" {
+#   #   destination = "/tmp/script.sh"
+#   #   content = templatefile(
+#   #     "${path.module}/templates/e2e.tftpl",
+#   #     {
+#   #       cluster_name        = var.cluster_name,
+#   #       resource_group_name = azurerm_resource_group.main.name
+#   #   })
+#   # }
+
+
+#   provisioner "local-exec" {
+
+#     command = "/bin/bash -x ${path.module}/scripts/e2e.sh"
+
+#     environment = {
+#       cluster_name        = var.cluster_name,
+#       resource_group_name = azurerm_resource_group.main.name
+#     }
+#   }
+
+#   # This is necessary to ensure *all*  module resources are built
+#   # before end2end GitOps is launched
+#   depends_on = [
+#     azureopenshift_redhatopenshift_cluster.cluster
+#   ]
+# }
+
