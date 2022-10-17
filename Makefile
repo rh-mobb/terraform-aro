@@ -7,7 +7,12 @@ create:
 	terraform apply aro.plan
 
 destroy:
-	terraform destroy -force
+	terraform destroy
+
+destroy.force:
+	terraform destroy -auto-approve
+
+delete: destroy
 
 help:
 	@echo make [create|destroy]
