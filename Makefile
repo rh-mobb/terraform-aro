@@ -1,6 +1,9 @@
 .DEFAULT_GOAL := create
 
-create:
+init:
+	terraform init
+
+create: init
 	terraform plan -out aro.plan \
 		-var "cluster_name=aro-${USER}" \
 
