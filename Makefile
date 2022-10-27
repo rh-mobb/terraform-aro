@@ -4,10 +4,19 @@ init:
 	terraform init
 
 create: init
-	terraform plan -out aro.plan \
+	terraform plan -out aro.plan 		\
 		-var "cluster_name=aro-${USER}" \
 
 	terraform apply aro.plan
+
+create-private: init
+	terraform plan -out aro.plan 		\
+		-var "cluster_name=aro-${USER}" \
+		-var "egress_lockdown=true"		\
+		-var "aro_private=true"
+
+	terraform apply aro.plan
+
 
 destroy:
 	terraform destroy
