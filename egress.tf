@@ -72,17 +72,18 @@ resource "azurerm_route_table" "firewall_rt" {
 }
 
 resource "azurerm_firewall_network_rule_collection" "firewall_app_rules" {
-  name                = "testcollection"
-  azure_firewall_name = azurerm_firewall.firewall.name
+  count               = var.egress_lockdown ? 1 : 0
+  name                = "${local.name_prefix}-fw-network-rules"
+  azure_firewall_name = azurerm_firewall.firewall.0.name
   resource_group_name = azurerm_resource_group.main.name
   priority            = 100
   action              = "Allow"
 
   rule {
-    name = "Allow_Egress"
+    name = "allow-all"
 
     source_addresses = [
-      "10.0.0.0/16",
+      "*",
     ]
 
     destination_ports = [
