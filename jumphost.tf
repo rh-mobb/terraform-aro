@@ -106,7 +106,3 @@ resource "azurerm_linux_virtual_machine" "jumphost-vm" {
 
   tags = var.tags
 }
-
-output "public_ip" {
-  value = azurerm_public_ip.jumphost-pip.0.ip_address
-}

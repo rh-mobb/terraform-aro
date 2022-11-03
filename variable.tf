@@ -57,7 +57,10 @@ variable "aro_jumphost_subnet_cidr_block" {
 variable "egress_lockdown" {
   type        = bool
   default     = false
-  description = "Enable the Egress Lockdown for Private ARO clusters"
+  description = <<EOF
+  Enable the Egress Lockdown for Private ARO clusters.
+  Default "false"
+  EOF
 }
 
 variable "aro_private" {
