@@ -71,9 +71,10 @@ resource "azurerm_route_table" "firewall_rt" {
 
 }
 
-resource "azurerm_firewall_network_rule_collection" "firewall_app_rules" {
+# TODO: Restrict the FW Network Rules
+resource "azurerm_firewall_network_rule_collection" "firewall_network_rules" {
   count               = var.egress_lockdown ? 1 : 0
-  name                = "${local.name_prefix}-fw-network-rules"
+  name                = "allow-https"
   azure_firewall_name = azurerm_firewall.firewall.0.name
   resource_group_name = azurerm_resource_group.main.name
   priority            = 100
@@ -81,27 +82,81 @@ resource "azurerm_firewall_network_rule_collection" "firewall_app_rules" {
 
   rule {
     name = "allow-all"
-
     source_addresses = [
       "*",
     ]
-
-    destination_ports = [
-      "53",
-    ]
-
     destination_addresses = [
-      "8.8.8.8",
-      "8.8.4.4",
+      "*"
     ]
-
     protocols = [
-      "TCP",
-      "UDP",
+      "Any"
+    ]
+    destination_ports = [
+      "1-65535",
     ]
   }
 }
 
+
+resource "azurerm_firewall_application_rule_collection" "firewall_app_rules_google" {
+  count               = var.egress_lockdown ? 1 : 0
+  name                = "ARO"
+  azure_firewall_name = azurerm_firewall.firewall.0.name
+  resource_group_name = azurerm_resource_group.main.name
+  priority            = 100
+  action              = "Allow"
+
+  rule {
+    name = "required"
+    source_addresses = [
+      "*",
+    ]
+    target_fqdns = [
+      "cert-api.access.redhat.com",
+      "api.openshift.com",
+      "api.access.redhat.com",
+      "infogw.api.openshift.com"
+    ]
+    protocol {
+      port = "443"
+      type = "Https"
+    }
+    protocol {
+      port = "80"
+      type = "Http"
+    }
+  }
+}
+
+resource "azurerm_firewall_application_rule_collection" "firewall_app_rules_docker" {
+  count               = var.egress_lockdown ? 1 : 0
+  name                = "Docker"
+  azure_firewall_name = azurerm_firewall.firewall.0.name
+  resource_group_name = azurerm_resource_group.main.name
+  priority            = 200
+  action              = "Allow"
+
+  rule {
+    name = "docker"
+    source_addresses = [
+      "*",
+    ]
+    target_fqdns = [
+      "*cloudflare.docker.com",
+      "*registry-1.docker.io",
+      "apt.dockerproject.org",
+      "auth.docker.io"
+    ]
+    protocol {
+      port = "443"
+      type = "Https"
+    }
+    protocol {
+      port = "80"
+      type = "Http"
+    }
+  }
+}
 
 resource "azurerm_subnet_route_table_association" "firewall_rt_aro_cp_subnet_association" {
   count          = var.egress_lockdown ? 1 : 0
@@ -114,13 +169,3 @@ resource "azurerm_subnet_route_table_association" "firewall_rt_aro_machine_subne
   subnet_id      = azurerm_subnet.machine_subnet.id
   route_table_id = azurerm_route_table.firewall_rt.0.id
 }
-
-# output "firewall_public_ip" {
-#   description = "the public ip of firewall."
-#   value       = concat([for ip in azurerm_public_ip.firewall_ip : ip.ip_address], [""])
-# }
-
-# output "firewall_private_ip" {
-#   description = "The private ip of firewall."
-#   value       = flatten(concat(azurerm_firewall.firewall.0.ip_configuration.0.private_ip_address, [""]))
-# }
