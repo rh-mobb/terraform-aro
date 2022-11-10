@@ -108,5 +108,5 @@ resource "azurerm_linux_virtual_machine" "jumphost-vm" {
 }
 
 output "public_ip" {
-  value = azurerm_public_ip.jumphost-pip.0.ip_address
+  value = try(azurerm_public_ip.jumphost-pip.0.ip_address,null)
 }
