@@ -12,7 +12,7 @@ create: init
 create-private: init
 	terraform plan -out aro.plan 		\
 		-var "cluster_name=aro-${USER}" \
-		-var "egress_lockdown=true"		\
+		-var "restrict_egress_traffic=true"		\
 		-var "aro_private=true"
 
 	terraform apply aro.plan

@@ -2,51 +2,99 @@
 
 Azure Red Hat OpenShift (ARO) is a fully-managed turnkey application platform.
 
-### Setup
+Supports Public ARO clusters and Private ARO clusters.
+
+## Setup
 
 Using the code in the repo will require having the following tools installed:
 
 - The Terraform CLI
 - The OC CLI
 
-### Create the ARO cluster and required infrastructure
+## Create the ARO cluster and required infrastructure
+
+### Public ARO cluster
 
 1. Modify the `variable.tf` var file, or modify the following command to customize your cluster.
 
-   ```
+   ```bash
    terraform init
    terraform plan -var "cluster_name=my-tf-cluster" -out aro.plan
    terraform apply aro.plan
    ```
 
-### Test Connectivity
+### Private ARO cluster
+
+1. Modify the `variable.tf` var file, or modify the following command to customize your cluster.
+
+   ```bash
+   terraform init
+   terraform plan -var "cluster_name=my-tf-cluster" -var "aro_private=True" -var "restrict_egress_traffic=True"  -out aro.plan
+   terraform apply aro.plan
+   ```
+
+   NOTE: restrict_egress_traffic=True will secure ARO cluster by routing [Egress traffic through an Azure Firewall](https://learn.microsoft.com/en-us/azure/openshift/howto-restrict-egress).
+
+## Test Connectivity
 
 1. Get the ARO cluster's console URL.
 
-   ```
-   az aro show \
-     --name $AZR_CLUSTER \
-     --resource-group $AZR_RESOURCE_GROUP \
-     -o tsv --query consoleProfile
+   ```bash
+   ARO_URL=$(az aro show -n $AZR_CLUSTER -g $AZR_RESOURCE_GROUP -o json | jq -r '.apiserverProfile.url')
+   echo $ARO_URL
    ```
 
 1. Get the ARO cluster's credentials.
 
+   ```bash
+   ARO_USERNAME=$(az aro list-credentials -n $AZR_CLUSTER -g $AZR_RESOURCE_GROUP -o json | jq -r '.kubeadminUsername')
+   ARO_PASSWORD=$(az aro list-credentials -n $AZR_CLUSTER -g $AZR_RESOURCE_GROUP -o json | jq -r '.kubeadminPassword')
+   echo $ARO_PASSWORD
+   echo $ARO_USERNAME
    ```
-   az aro list-credentials \
-    --name $AZR_CLUSTER \
-    --resource-group $AZR_RESOURCE_GROUP \
-    -o tsv
-   ```
+
+### Public Test Connectivity
 
 1. Log into the cluster using oc login command from the create admin command above. ex.
 
     ```bash
-    oc login https://api.$YOUR_OPENSHIFT_DNS:6443 --username kubeadmin --password xxxxxxxxxx
+    oc login $ARO_URL -u $ARO_USERNAME -p $ARO_PASSWORD
     ```
 
 1. Check that you can access the Console by opening the console url in your browser.
 
+### Private Test Connectivity
+
+1. Save the jump host public IP address
+
+    ```bash
+   JUMP_IP=$(az vm list-ip-addresses -g $AZR_RESOURCE_GROUP -n $AZR_CLUSTER-jumphost -o tsv \
+   --query '[].virtualMachine.network.publicIpAddresses[0].ipAddress')
+   echo $JUMP_IP
+   ```
+
+1. update /etc/hosts to point the openshift domains to localhost. Use the DNS of your openshift cluster as described in the previous step in place of $YOUR_OPENSHIFT_DNS below
+
+   ```bash
+   127.0.0.1 api.$YOUR_OPENSHIFT_DNS
+   127.0.0.1 console-openshift-console.apps.$YOUR_OPENSHIFT_DNS
+   127.0.0.1 oauth-openshift.apps.$YOUR_OPENSHIFT_DNS
+   ```
+
+1. SSH to that instance, tunneling traffic for the appropriate hostnames. Be sure to use your new/existing private key, the OpenShift DNS for $YOUR_OPENSHIFT_DNS and your Jumphost IP
+
+   ```bash
+   sudo ssh -L 6443:api.$YOUR_OPENSHIFT_DNS:6443 \
+   -L 443:console-openshift-console.apps.$YOUR_OPENSHIFT_DNS:443 \
+   -L 80:console-openshift-console.apps.$YOUR_OPENSHIFT_DNS:80 \
+   aro@$JUMP_IP
+   ```
+
+1. Log in using oc login
+
+   ```bash
+   oc login $ARO_URL -u $ARO_USERNAME -p $ARO_PASSWORD
+   ```
 
 ## Cleanup
 
