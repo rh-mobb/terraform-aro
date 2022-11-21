@@ -90,9 +90,10 @@ resource "azurerm_linux_virtual_machine" "jumphost-vm" {
 
   provisioner "remote-exec" {
     connection {
-      type = "ssh"
-      host = azurerm_public_ip.jumphost-pip.0.ip_address
-      user = "aro"
+      type        = "ssh"
+      host        = azurerm_public_ip.jumphost-pip.0.ip_address
+      user        = "aro"
+      private_key = file("~/.ssh/id_rsa")
     }
     inline = [
       "sudo dnf install telnet wget bash-completion -y",
