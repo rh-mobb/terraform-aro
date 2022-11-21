@@ -54,11 +54,11 @@ variable "aro_jumphost_subnet_cidr_block" {
   description = "cidr range for bastion / jumphost"
 }
 
-variable "egress_lockdown" {
+variable "restrict_egress_traffic" {
   type        = bool
   default     = false
   description = <<EOF
-  Enable the Egress Lockdown for Private ARO clusters.
+  Enable the Restrict Egress Traffic for Private ARO clusters.
   Default "false"
   EOF
 }

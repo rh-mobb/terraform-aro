@@ -11,6 +11,8 @@ Using the code in the repo will require having the following tools installed:
 
 ### Create the ARO cluster and required infrastructure
 
+#### Public ARO cluster
+
 1. Modify the `variable.tf` var file, or modify the following command to customize your cluster.
 
    ```
@@ -18,6 +20,19 @@ Using the code in the repo will require having the following tools installed:
    terraform plan -var "cluster_name=my-tf-cluster" -out aro.plan
    terraform apply aro.plan
    ```
+
+#### Private ARO cluster
+
+1. Modify the `variable.tf` var file, or modify the following command to customize your cluster.
+
+   ```
+   terraform init
+   terraform plan -var "cluster_name=my-tf-cluster" -var "aro_private=True" -var "restrict_egress_traffic=True"  -out aro.plan
+   terraform apply aro.plan
+   ```
+
+   NOTE: restrict_egress_traffic=True will secure ARO cluster by routing [Egress traffic through an Azure Firewall](https://learn.microsoft.com/en-us/azure/openshift/howto-restrict-egress).
+
 
 ### Test Connectivity
 

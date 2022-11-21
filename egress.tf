@@ -1,8 +1,8 @@
-# Egress Lockdown in a Private ARO Cluster
-# For enable egress_lockdown define egress_lockdown = "true" in the tfvars / vars
+# Restrict Egress Traffic in a Private ARO Cluster
+# For enable restrict_egress_traffic define restrict_egress_traffic = "true" in the tfvars / vars
 
 resource "azurerm_virtual_network" "firewall_vnet" {
-  count               = var.egress_lockdown ? 1 : 0
+  count               = var.restrict_egress_traffic ? 1 : 0
   name                = "${local.name_prefix}-fw-vnet"
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
@@ -11,7 +11,7 @@ resource "azurerm_virtual_network" "firewall_vnet" {
 }
 
 resource "azurerm_subnet" "firewall_subnet" {
-  count                = var.egress_lockdown ? 1 : 0
+  count                = var.restrict_egress_traffic ? 1 : 0
   name                 = "AzureFirewallSubnet"
   resource_group_name  = azurerm_resource_group.main.name
   virtual_network_name = azurerm_virtual_network.firewall_vnet.0.name
@@ -20,7 +20,7 @@ resource "azurerm_subnet" "firewall_subnet" {
 }
 
 resource "azurerm_public_ip" "firewall_ip" {
-  count               = var.egress_lockdown ? 1 : 0
+  count               = var.restrict_egress_traffic ? 1 : 0
   name                = "${local.name_prefix}-fw-ip"
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
@@ -31,7 +31,7 @@ resource "azurerm_public_ip" "firewall_ip" {
 }
 
 resource "azurerm_firewall" "firewall" {
-  count               = var.egress_lockdown ? 1 : 0
+  count               = var.restrict_egress_traffic ? 1 : 0
   name                = "${local.name_prefix}-firewall"
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
@@ -47,7 +47,7 @@ resource "azurerm_firewall" "firewall" {
 }
 
 resource "azurerm_route_table" "firewall_rt" {
-  count               = var.egress_lockdown ? 1 : 0
+  count               = var.restrict_egress_traffic ? 1 : 0
   name                = "${local.name_prefix}-fw-rt"
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
@@ -73,7 +73,7 @@ resource "azurerm_route_table" "firewall_rt" {
 
 # TODO: Restrict the FW Network Rules
 resource "azurerm_firewall_network_rule_collection" "firewall_network_rules" {
-  count               = var.egress_lockdown ? 1 : 0
+  count               = var.restrict_egress_traffic ? 1 : 0
   name                = "allow-https"
   azure_firewall_name = azurerm_firewall.firewall.0.name
   resource_group_name = azurerm_resource_group.main.name
@@ -99,7 +99,7 @@ resource "azurerm_firewall_network_rule_collection" "firewall_network_rules" {
 
 
 resource "azurerm_firewall_application_rule_collection" "firewall_app_rules_google" {
-  count               = var.egress_lockdown ? 1 : 0
+  count               = var.restrict_egress_traffic ? 1 : 0
   name                = "ARO"
   azure_firewall_name = azurerm_firewall.firewall.0.name
   resource_group_name = azurerm_resource_group.main.name
@@ -129,7 +129,7 @@ resource "azurerm_firewall_application_rule_collection" "firewall_app_rules_goog
 }
 
 resource "azurerm_firewall_application_rule_collection" "firewall_app_rules_docker" {
-  count               = var.egress_lockdown ? 1 : 0
+  count               = var.restrict_egress_traffic ? 1 : 0
   name                = "Docker"
   azure_firewall_name = azurerm_firewall.firewall.0.name
   resource_group_name = azurerm_resource_group.main.name
@@ -159,13 +159,13 @@ resource "azurerm_firewall_application_rule_collection" "firewall_app_rules_dock
 }
 
 resource "azurerm_subnet_route_table_association" "firewall_rt_aro_cp_subnet_association" {
-  count          = var.egress_lockdown ? 1 : 0
+  count          = var.restrict_egress_traffic ? 1 : 0
   subnet_id      = azurerm_subnet.control_plane_subnet.id
   route_table_id = azurerm_route_table.firewall_rt.0.id
 }
 
 resource "azurerm_subnet_route_table_association" "firewall_rt_aro_machine_subnet_association" {
-  count          = var.egress_lockdown ? 1 : 0
+  count          = var.restrict_egress_traffic ? 1 : 0
   subnet_id      = azurerm_subnet.machine_subnet.id
   route_table_id = azurerm_route_table.firewall_rt.0.id
 }
