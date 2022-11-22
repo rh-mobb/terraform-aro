@@ -29,11 +29,11 @@ Using the code in the repo will require having the following tools installed:
 
    ```bash
    terraform init
-   terraform plan -var "cluster_name=my-tf-cluster" -var "aro_private=True" -var "restrict_egress_traffic=True"  -out aro.plan
+   terraform plan -var "cluster_name=my-tf-cluster" -var "aro_private=true" -var "restrict_egress_traffic=true"  -out aro.plan
    terraform apply aro.plan
    ```
 
-   NOTE: restrict_egress_traffic=True will secure ARO cluster by routing [Egress traffic through an Azure Firewall](https://learn.microsoft.com/en-us/azure/openshift/howto-restrict-egress).
+   NOTE: restrict_egress_traffic=true will secure ARO cluster by routing [Egress traffic through an Azure Firewall](https://learn.microsoft.com/en-us/azure/openshift/howto-restrict-egress).
 
 ## Test Connectivity
 
