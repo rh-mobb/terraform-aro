@@ -90,6 +90,10 @@ resource "azureopenshift_redhatopenshift_cluster" "private" {
     visibility = "Private"
   }
 
+  cluster_profile {
+    pull_secret = file(var.pull_secret_path)
+  }
+
   depends_on = [
     azurerm_subnet.machine_subnet,
     azurerm_subnet.control_plane_subnet,
