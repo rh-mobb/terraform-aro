@@ -30,12 +30,6 @@ variable "aro_virtual_network_cidr_block" {
   description = "cidr range for aro virtual network"
 }
 
-variable "aro_virtual_network_firewall_cidr_block" {
-  type        = string
-  default     = "10.10.0.0/20"
-  description = "cidr range for Azure Firewall virtual network"
-}
-
 variable "aro_control_subnet_cidr_block" {
   type        = string
   default     = "10.0.0.0/23"
@@ -52,6 +46,12 @@ variable "aro_jumphost_subnet_cidr_block" {
   type        = string
   default     = "10.0.4.0/23"
   description = "cidr range for bastion / jumphost"
+}
+
+variable "aro_firewall_subnet_cidr_block" {
+  type        = string
+  default     = "10.0.6.0/23"
+  description = "cidr range for Azure Firewall virtual network"
 }
 
 variable "restrict_egress_traffic" {
@@ -71,4 +71,13 @@ variable "aro_private" {
   Default "false"
   EOF
 
+}
+
+variable "pull_secret_path" {
+  type        = string
+  default     = false
+  description = <<EOF
+  Pull Secret for the ARO cluster 
+  Default "false"
+  EOF
 }

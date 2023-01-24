@@ -1,21 +1,14 @@
 # Restrict Egress Traffic in a Private ARO Cluster
 # For enable restrict_egress_traffic define restrict_egress_traffic = "true" in the tfvars / vars
 
-resource "azurerm_virtual_network" "firewall_vnet" {
-  count               = var.restrict_egress_traffic ? 1 : 0
-  name                = "${local.name_prefix}-fw-vnet"
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
-  address_space       = [var.aro_virtual_network_cidr_block]
-  tags                = var.tags
-}
-
+# The Azure FW will be into the ARO subnet following the architecture
+# defined in the official docs https://learn.microsoft.com/en-us/azure/openshift/howto-restrict-egress#create-an-azure-firewall
 resource "azurerm_subnet" "firewall_subnet" {
   count                = var.restrict_egress_traffic ? 1 : 0
   name                 = "AzureFirewallSubnet"
   resource_group_name  = azurerm_resource_group.main.name
-  virtual_network_name = azurerm_virtual_network.firewall_vnet.0.name
-  address_prefixes     = [var.aro_control_subnet_cidr_block]
+  virtual_network_name = azurerm_virtual_network.main.name
+  address_prefixes     = [var.aro_firewall_subnet_cidr_block]
   service_endpoints    = ["Microsoft.Storage", "Microsoft.ContainerRegistry"]
 }
 
@@ -98,12 +91,12 @@ resource "azurerm_firewall_network_rule_collection" "firewall_network_rules" {
 }
 
 
-resource "azurerm_firewall_application_rule_collection" "firewall_app_rules_google" {
+resource "azurerm_firewall_application_rule_collection" "firewall_app_rules_aro" {
   count               = var.restrict_egress_traffic ? 1 : 0
   name                = "ARO"
   azure_firewall_name = azurerm_firewall.firewall.0.name
   resource_group_name = azurerm_resource_group.main.name
-  priority            = 100
+  priority            = 101
   action              = "Allow"
 
   rule {
@@ -115,7 +108,16 @@ resource "azurerm_firewall_application_rule_collection" "firewall_app_rules_goog
       "cert-api.access.redhat.com",
       "api.openshift.com",
       "api.access.redhat.com",
-      "infogw.api.openshift.com"
+      "infogw.api.openshift.com",
+      "registry.redhat.io",
+      "access.redhat.com",
+      "*.quay.io",
+      "sso.redhat.com",
+      "*.openshiftapps.com",
+      "mirror.openshift.com",
+      "registry.access.redhat.com",
+      "*.redhat.com",
+      "*.openshift.com"
     ]
     protocol {
       port = "443"
@@ -126,7 +128,35 @@ resource "azurerm_firewall_application_rule_collection" "firewall_app_rules_goog
       type = "Http"
     }
   }
+
+  rule {
+    name = "azurespecific"
+    source_addresses = [
+      "*",
+    ]
+    target_fqdns = [
+      "*.azurecr.io",
+      "*.azure.com",
+      "login.microsoftonline.com",
+      "*.windows.net",
+      "dc.services.visualstudio.com",
+      "*.ods.opinsights.azure.com",
+      "*.oms.opinsights.azure.com",
+      "*.monitoring.azure.com",
+      "*.azure.cn"
+    ]
+    protocol {
+      port = "443"
+      type = "Https"
+    }
+    protocol {
+      port = "80"
+      type = "Http"
+    }
+  }
+
 }
+
 
 resource "azurerm_firewall_application_rule_collection" "firewall_app_rules_docker" {
   count               = var.restrict_egress_traffic ? 1 : 0
