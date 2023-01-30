@@ -57,8 +57,6 @@ resource "azureopenshift_redhatopenshift_cluster" "cluster" {
     client_secret = azuread_application_password.cluster.value
   }
   depends_on = [
-    azurerm_subnet.machine_subnet,
-    azurerm_subnet.control_plane_subnet,
     azurerm_role_assignment.vnet
   ]
 }
@@ -95,8 +93,6 @@ resource "azureopenshift_redhatopenshift_cluster" "private" {
   }
 
   depends_on = [
-    azurerm_subnet.machine_subnet,
-    azurerm_subnet.control_plane_subnet,
     azurerm_role_assignment.vnet,
     azurerm_firewall_network_rule_collection.firewall_network_rules
   ]
