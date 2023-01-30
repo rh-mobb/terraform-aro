@@ -32,10 +32,7 @@ Using the code in the repo will require having the following tools installed:
    ```bash
    terraform init
    
-   terraform plan -var "cluster_name=my-tf-cluster" \
-   -var "ingress_profile=Public"
-   -var "api_server_profile=Public" \ 
-   -var "restrict_egress_traffic=true" -out aro.plan
+   terraform plan -var "cluster_name=my-tf-cluster" -var "ingress_profile=Public" -var "api_server_profile=Public" -var "restrict_egress_traffic=true" -out aro.plan
 
    terraform apply aro.plan
    ```
