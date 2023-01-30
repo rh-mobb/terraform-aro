@@ -1,5 +1,5 @@
 resource "azurerm_subnet" "jumphost-subnet" {
-  count                = var.aro_private ? 1 : 0
+  count                = var.api_server_profile == "Private" || var.ingress_profile == "Private" ? 1 : 0
   name                 = "${local.name_prefix}-jumphost-subnet"
   resource_group_name  = azurerm_resource_group.main.name
   virtual_network_name = azurerm_virtual_network.main.name
@@ -11,7 +11,7 @@ resource "azurerm_subnet" "jumphost-subnet" {
 # Due to remote-exec issue Static allocation needs
 # to be used - https://github.com/hashicorp/terraform/issues/21665
 resource "azurerm_public_ip" "jumphost-pip" {
-  count               = var.aro_private ? 1 : 0
+  count                = var.api_server_profile == "Private" || var.ingress_profile == "Private" ? 1 : 0
   name                = "${local.name_prefix}-jumphost-pip"
   resource_group_name = azurerm_resource_group.main.name
   location            = azurerm_resource_group.main.location
@@ -21,7 +21,7 @@ resource "azurerm_public_ip" "jumphost-pip" {
 }
 
 resource "azurerm_network_interface" "jumphost-nic" {
-  count               = var.aro_private ? 1 : 0
+  count                = var.api_server_profile == "Private" || var.ingress_profile == "Private" ? 1 : 0
   name                = "${local.name_prefix}-jumphost-nic"
   resource_group_name = azurerm_resource_group.main.name
   location            = azurerm_resource_group.main.location
@@ -35,7 +35,7 @@ resource "azurerm_network_interface" "jumphost-nic" {
 }
 
 resource "azurerm_network_security_group" "jumphost-nsg" {
-  count               = var.aro_private ? 1 : 0
+  count                = var.api_server_profile == "Private" || var.ingress_profile == "Private" ? 1 : 0
   name                = "${local.name_prefix}-jumphost-nsg"
   resource_group_name = azurerm_resource_group.main.name
   location            = azurerm_resource_group.main.location
@@ -54,13 +54,13 @@ resource "azurerm_network_security_group" "jumphost-nsg" {
 }
 
 resource "azurerm_network_interface_security_group_association" "association" {
-  count                     = var.aro_private ? 1 : 0
+  count                = var.api_server_profile == "Private" || var.ingress_profile == "Private" ? 1 : 0
   network_interface_id      = azurerm_network_interface.jumphost-nic.0.id
   network_security_group_id = azurerm_network_security_group.jumphost-nsg.0.id
 }
 
 resource "azurerm_linux_virtual_machine" "jumphost-vm" {
-  count               = var.aro_private ? 1 : 0
+  count                = var.api_server_profile == "Private" || var.ingress_profile == "Private" ? 1 : 0
   name                = "${local.name_prefix}-jumphost"
   resource_group_name = azurerm_resource_group.main.name
   location            = azurerm_resource_group.main.location
