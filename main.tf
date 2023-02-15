@@ -37,33 +37,9 @@ resource "azurerm_subnet" "machine_subnet" {
   service_endpoints    = ["Microsoft.Storage", "Microsoft.ContainerRegistry"]
 }
 
-# ## ARO Cluster
+## ARO Cluster
 
-## ARO Public mode (Default)
 resource "azureopenshift_redhatopenshift_cluster" "cluster" {
-  count               = var.aro_private ? 0 : 1
-  name                = var.cluster_name
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
-  tags                = var.tags
-  master_profile {
-    subnet_id = azurerm_subnet.control_plane_subnet.id
-  }
-  worker_profile {
-    subnet_id = azurerm_subnet.machine_subnet.id
-  }
-  service_principal {
-    client_id     = azuread_application.cluster.application_id
-    client_secret = azuread_application_password.cluster.value
-  }
-  depends_on = [
-    azurerm_role_assignment.vnet
-  ]
-}
-
-## ARO Private mode
-resource "azureopenshift_redhatopenshift_cluster" "private" {
-  count               = var.aro_private ? 1 : 0
   name                = var.cluster_name
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
@@ -81,11 +57,11 @@ resource "azureopenshift_redhatopenshift_cluster" "private" {
   }
 
   api_server_profile {
-    visibility = "Private"
+    visibility = var.api_server_profile
   }
 
   ingress_profile {
-    visibility = "Private"
+    visibility = var.ingress_profile
   }
 
   cluster_profile {

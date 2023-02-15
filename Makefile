@@ -13,7 +13,8 @@ create-private: init
 	terraform plan -out aro.plan 		\
 		-var "cluster_name=aro-${USER}" \
 		-var "restrict_egress_traffic=true"		\
-		-var "aro_private=true" \
+		-var "api_server_profile=Private" \
+		-var "ingress_profile=Private" \
 		-var "pull_secret_path=~/Downloads/pull-secret.json"
 
 	terraform apply aro.plan
@@ -22,7 +23,8 @@ create-private-noegress: init
 	terraform plan -out aro.plan 		\
 		-var "cluster_name=aro-${USER}" \
 		-var "restrict_egress_traffic=false"		\
-		-var "aro_private=true" \
+		-var "api_server_profile=Private" \
+		-var "ingress_profile=Private" \
 		-var "pull_secret_path=~/Downloads/pull-secret.json"
 
 	terraform apply aro.plan

@@ -63,14 +63,22 @@ variable "restrict_egress_traffic" {
   EOF
 }
 
-variable "aro_private" {
-  type        = bool
-  default     = false
+variable "api_server_profile" {
+  type        = string
   description = <<EOF
-  Deploy an ARO cluster in a private mode. 
-  Default "false"
+  Api Server Profile Visibility - Public or Private
+  Default "Public"
   EOF
+  default     = "Public"
+}
 
+variable "ingress_profile" {
+  type        = string
+  description = <<EOF
+  Ingress Controller Profile Visibility - Public or Private
+  Default "Public"
+  EOF
+  default     = "Public"
 }
 
 variable "pull_secret_path" {
