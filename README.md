@@ -41,11 +41,18 @@ Using the code in the repo will require having the following tools installed:
 
 ## Test Connectivity
 
-1. Get the ARO cluster's console URL.
+1. Get the ARO cluster's api server URL.
 
    ```bash
    ARO_URL=$(az aro show -n $AZR_CLUSTER -g $AZR_RESOURCE_GROUP -o json | jq -r '.apiserverProfile.url')
    echo $ARO_URL
+   ```
+
+1. Get the ARO cluster's Console URL
+
+   ```bash
+   CONSOLE_URL=$(az aro show -n $AZR_CLUSTER -g $AZR_RESOURCE_GROUP -o json | jq -r '.consoleProfile.url')
+   echo $CONSOLE_URL
    ```
 
 1. Get the ARO cluster's credentials.
