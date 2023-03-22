@@ -11,7 +11,7 @@ terraform {
 
     azureopenshift = {
       source  = "rh-mobb/azureopenshift"
-      version = "~>0.0.14"
+      version = "~>0.0.16"
     }
   }
 }

@@ -89,3 +89,12 @@ variable "pull_secret_path" {
   Default "false"
   EOF
 }
+
+variable "aro_version" {
+  type        = string
+  description = <<EOF
+  ARO version
+  Default "4.11.31"
+  EOF
+  default     = "4.11.31"
+}
