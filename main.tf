@@ -66,6 +66,7 @@ resource "azureopenshift_redhatopenshift_cluster" "cluster" {
 
   cluster_profile {
     pull_secret = file(var.pull_secret_path)
+    version     = var.aro_version
   }
 
   depends_on = [
