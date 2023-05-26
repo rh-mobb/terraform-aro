@@ -15,26 +15,28 @@ Using the code in the repo will require having the following tools installed:
 
 ### Public ARO cluster
 
-1. Modify the `variable.tf` var file, or modify the following command to customize your cluster.
+1. Create a local variables file
 
    ```bash
-   terraform init
-   terraform plan -var "cluster_name=my-tf-cluster" -out aro.plan
-   terraform apply aro.plan
+   make tfvars
+   ```
+
+1. Modify the `terraform.tfvars` var file, you can use the `variables.tf` to see the full list of variables that can be set.
+
+1. Deploy your cluster
+
+   ```bash
+   make create
    ```
 
    NOTE: By default the ingress_profile and the api_server_profile is both Public, but can be change using the [TF variables](https://github.com/rh-mobb/terraform-aro/blob/main/variable.tf).
 
 ### Private ARO cluster
 
-1. Modify the `variable.tf` var file, or modify the following command to customize your cluster.
+1. Modify the `terraform.tfvars` var file, you can use the `variables.tf` to see the full list of variables that can be set.
 
    ```bash
-   terraform init
-   
-   terraform plan -var "cluster_name=my-tf-cluster" -var "ingress_profile=Private" -var "api_server_profile=Private" -var "restrict_egress_traffic=true" -out aro.plan
-
-   terraform apply aro.plan
+   make create-private
    ```
 
    NOTE: restrict_egress_traffic=true will secure ARO cluster by routing [Egress traffic through an Azure Firewall](https://learn.microsoft.com/en-us/azure/openshift/howto-restrict-egress).
@@ -112,5 +114,5 @@ Using the code in the repo will require having the following tools installed:
 1. Delete Cluster and Resources
 
     ```bash
-    terraform destroy -auto-approve "aro.plan"
+    terraform destroy -auto-approve
     ```

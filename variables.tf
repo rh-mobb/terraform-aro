@@ -85,7 +85,7 @@ variable "pull_secret_path" {
   type        = string
   default     = false
   description = <<EOF
-  Pull Secret for the ARO cluster 
+  Pull Secret for the ARO cluster
   Default "false"
   EOF
 }
@@ -94,7 +94,7 @@ variable "aro_version" {
   type        = string
   description = <<EOF
   ARO version
-  Default "4.11.31"
+  Default "4.11.26"
   EOF
-  default     = "4.11.31"
+  default     = "4.11.26"
 }
