@@ -1,0 +1,2 @@
+pull_secret_path = "~/Downloads/pull-secret.txt"
+location = "eastus"
