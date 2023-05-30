@@ -53,13 +53,6 @@ resource "azurerm_route_table" "firewall_rt" {
     next_hop_in_ip_address = azurerm_firewall.firewall.0.ip_configuration.0.private_ip_address
   }
 
-  # Local Route for internal VNet
-  route {
-    name           = "local-route"
-    address_prefix = "10.0.0.0/16"
-    next_hop_type  = "VirtualNetworkGateway"
-  }
-
   tags = var.tags
 
 }
