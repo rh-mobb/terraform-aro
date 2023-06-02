@@ -54,6 +54,12 @@ variable "aro_firewall_subnet_cidr_block" {
   description = "cidr range for Azure Firewall virtual network"
 }
 
+variable "aro_private_endpoint_cidr_block" {
+  type        = string
+  default     = "10.0.8.0/23"
+  description = "cidr range for Azure Firewall virtual network"
+}
+
 variable "restrict_egress_traffic" {
   type        = bool
   default     = false
@@ -97,4 +103,13 @@ variable "aro_version" {
   Default "4.11.26"
   EOF
   default     = "4.11.26"
+}
+
+variable "acr_private" {
+  type        = bool
+  default     = false
+  description = <<EOF
+  Deploy ACR for Private ARO clusters.
+  Default "false"
+  EOF
 }
