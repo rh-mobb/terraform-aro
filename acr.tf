@@ -26,9 +26,17 @@ resource "azurerm_private_dns_zone_virtual_network_link" "dns_link" {
   registration_enabled  = false
 }
 
+resource "random_string" "acr" {
+  length      = 4
+  min_numeric = 4
+  keepers = {
+    name = "acraro"
+  }
+}
+
 resource "azurerm_container_registry" "acr" {
   count                         = var.acr_private ? 1 : 0
-  name                          = "acraro"
+  name                          = "acraro${random_string.acr.result}"
   location                      = azurerm_resource_group.main.location
   resource_group_name           = azurerm_resource_group.main.name
   sku                           = "Premium"

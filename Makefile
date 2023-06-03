@@ -22,10 +22,11 @@ create: init
 .PHONY: create-private
 create-private: init
 	terraform plan -out aro.plan 		                       \
-		-var "cluster_name=aro-$(whoami)"                      \
+		-var "cluster_name=aro-$(whoami)"                    \
 		-var "restrict_egress_traffic=true"		               \
 		-var "api_server_profile=Private"                    \
-		-var "ingress_profile=Private"
+		-var "ingress_profile=Private"                       \
+		-var "acr_private=false"
 
 	terraform apply aro.plan
 
@@ -50,3 +51,7 @@ destroy.force:
 .PHONY: delete
 delete: destroy
 
+.PHONY: clean
+clean:
+	rm -rf terraform.tfstate*
+	rm -rf .terraform*
