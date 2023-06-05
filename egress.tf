@@ -3,6 +3,8 @@
 
 # The Azure FW will be into the ARO subnet following the architecture
 # defined in the official docs https://learn.microsoft.com/en-us/azure/openshift/howto-restrict-egress#create-an-azure-firewall
+
+# TODO: Convert from Non Hub-Spoke to Hub-Spoke model (split vNETs)
 resource "azurerm_subnet" "firewall_subnet" {
   count                = var.restrict_egress_traffic ? 1 : 0
   name                 = "AzureFirewallSubnet"
