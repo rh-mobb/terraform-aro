@@ -26,7 +26,7 @@ create-private: init
 		-var "restrict_egress_traffic=true"		               \
 		-var "api_server_profile=Private"                    \
 		-var "ingress_profile=Private"                       \
-		-var "acr_private=true"
+		-var "acr_private=false"
 
 	terraform apply aro.plan
 
