@@ -109,6 +109,14 @@ Using the code in the repo will require having the following tools installed:
    oc login $ARO_URL -u $ARO_USERNAME -p $ARO_PASSWORD
    ```
 
+NOTE: Another option to connect to a Private ARO cluster jumphost is the usage of [sshuttle](https://sshuttle.readthedocs.io/en/stable/index.html). If we suppose that we deployed ARO vnet with the `10.0.0.0/20` CIDR we can connect to the cluster using (both API and Console):
+
+```bash
+sshuttle --dns -NHr aro@$JUMP_IP 10.0.0.0/20 --daemon
+```
+
+and opening a browser the `api.$YOUR_OPENSHIFT_DNS` and `console-openshift-console.apps.$YOUR_OPENSHIFT_DNS` will be reachable.
+
 ## Cleanup
 
 1. Delete Cluster and Resources
