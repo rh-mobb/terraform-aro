@@ -15,25 +15,25 @@ init:
 .PHONY: create
 create: init
 	terraform plan -out aro.plan 		                       \
-		-var "cluster_name=aro-$(whoami)"
+		-var "cluster_name=aro-$(shell whoami)"
 
 	terraform apply aro.plan
 
 .PHONY: create-private
 create-private: init
 	terraform plan -out aro.plan 		                       \
-		-var "cluster_name=aro-$(whoami)"                    \
+		-var "cluster_name=aro-$(shell whoami)"              \
 		-var "restrict_egress_traffic=true"		               \
 		-var "api_server_profile=Private"                    \
 		-var "ingress_profile=Private"                       \
-		-var "acr_private=false"
+		-var "acr_private=true"
 
 	terraform apply aro.plan
 
 .PHONY: create-private-noegress
 create-private-noegress: init
 	terraform plan -out aro.plan 		                       \
-		-var "cluster_name=aro-$(whoami)"                      \
+		-var "cluster_name=aro-$(shell whoami)"              \
 		-var "restrict_egress_traffic=false"		             \
 		-var "api_server_profile=Private"                    \
 		-var "ingress_profile=Private"
