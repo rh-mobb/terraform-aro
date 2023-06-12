@@ -112,7 +112,8 @@ resource "azurerm_firewall_application_rule_collection" "firewall_app_rules_aro"
       "mirror.openshift.com",
       "registry.access.redhat.com",
       "*.redhat.com",
-      "*.openshift.com"
+      "*.openshift.com",
+      "rhui-*.microsoft.com"
     ]
     protocol {
       port = "443"
