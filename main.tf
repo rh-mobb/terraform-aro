@@ -40,10 +40,11 @@ resource "azurerm_subnet" "machine_subnet" {
 ## ARO Cluster
 
 resource "azureopenshift_redhatopenshift_cluster" "cluster" {
-  name                = var.cluster_name
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
-  tags                = var.tags
+  name                   = var.cluster_name
+  location               = azurerm_resource_group.main.location
+  resource_group_name    = azurerm_resource_group.main.name
+  cluster_resource_group = "${local.name_prefix}-cluster-rg"
+  tags                   = var.tags
 
   master_profile {
     subnet_id = azurerm_subnet.control_plane_subnet.id
