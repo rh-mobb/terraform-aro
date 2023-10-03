@@ -2,16 +2,16 @@ terraform {
   required_providers {
     azuread = {
       source  = "hashicorp/azuread"
-      version = "~>2.24"
+      version = "~>2.43"
     }
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~>3.0"
+      version = "~>3.75.0"
     }
 
     azureopenshift = {
       source  = "rh-mobb/azureopenshift"
-      version = "~>0.0.16"
+      version = "0.2.0-pre"
     }
   }
 }
@@ -25,5 +25,6 @@ provider "azurerm" {
 
 }
 
-
-provider "azureopenshift" {}
+provider "azureopenshift" {
+  subscription_id = var.subscription_id
+}

@@ -100,9 +100,9 @@ variable "aro_version" {
   type        = string
   description = <<EOF
   ARO version
-  Default "4.11.26"
+  Default "4.12.25"
   EOF
-  default     = "4.11.26"
+  default     = "4.12.25"
 }
 
 variable "acr_private" {
@@ -112,4 +112,19 @@ variable "acr_private" {
   Deploy ACR for Private ARO clusters.
   Default "false"
   EOF
+}
+
+variable "outbound_type" {
+  type        = string
+  description = <<EOF
+  Outbound Type - Loadbalancer or UserDefinedRouting
+  Default "Loadbalancer"
+  EOF
+  default     = "Loadbalancer"
+}
+
+variable "subscription_id" {
+  type        = string
+  description = "Azure Subscription ID (needed with the new Auth method)"
+  default     = "Use_Your_Subs_ID"
 }
