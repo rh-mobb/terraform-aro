@@ -71,7 +71,7 @@ resource "azureopenshift_redhatopenshift_cluster" "cluster" {
   }
 
   network_profile {
-    outbound_type = "UserDefinedRouting"
+    outbound_type = var.outbound_type
   }
 
   depends_on = [

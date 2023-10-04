@@ -23,6 +23,8 @@ Using the code in the repo will require having the following tools installed:
 
 1. Modify the `terraform.tfvars` var file, you can use the `variables.tf` to see the full list of variables that can be set.
 
+   >NOTE: You can define the subscription_id needed for the Auth using ```export TF_VAR_subscription_id="xxx"``` as well.
+
 1. Deploy your cluster
 
    ```bash
@@ -39,7 +41,9 @@ Using the code in the repo will require having the following tools installed:
    make create-private
    ```
 
-   NOTE: restrict_egress_traffic=true will secure ARO cluster by routing [Egress traffic through an Azure Firewall](https://learn.microsoft.com/en-us/azure/openshift/howto-restrict-egress).
+   >NOTE: restrict_egress_traffic=true will secure ARO cluster by routing [Egress traffic through an Azure Firewall](https://learn.microsoft.com/en-us/azure/openshift/howto-restrict-egress).
+
+   >NOTE2: Private Clusters can be created [without Public IP using the UserDefineRouting](https://learn.microsoft.com/en-us/azure/openshift/howto-create-private-cluster-4x#create-a-private-cluster-without-a-public-ip-address) flag in the outboundtype=UserDefineRouting variable. By default LoadBalancer is used for the egress.
 
 ## Test Connectivity
 
@@ -122,5 +126,5 @@ and opening a browser the `api.$YOUR_OPENSHIFT_DNS` and `console-openshift-conso
 1. Delete Cluster and Resources
 
     ```bash
-    terraform destroy -auto-approve
+    make destroy-force
     ```

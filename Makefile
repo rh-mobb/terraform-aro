@@ -15,6 +15,7 @@ init:
 .PHONY: create
 create: init
 	terraform plan -out aro.plan 		                       \
+		-var "subscription_id=$(TF_VAR_subscription_id)"     \
 		-var "cluster_name=aro-$(shell whoami)"
 
 	terraform apply aro.plan
