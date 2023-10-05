@@ -65,6 +65,10 @@ resource "azureopenshift_redhatopenshift_cluster" "cluster" {
     visibility = var.ingress_profile
   }
 
+  network_profile {
+    outbound_type = "UserDefinedRouting"
+  }
+
   cluster_profile {
     pull_secret = file(var.pull_secret_path)
     version     = var.aro_version

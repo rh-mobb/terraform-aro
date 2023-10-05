@@ -1,2 +1,4 @@
-pull_secret_path = "~/Downloads/pull-secret.txt"
+pull_secret_path = "~/Documents/Azure/Secrets/pull-secret.txt"
 location = "eastus"
+cluster_name = "cwooley-test"
+
