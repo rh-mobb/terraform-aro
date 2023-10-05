@@ -15,6 +15,7 @@ init:
 .PHONY: create
 create: init
 	terraform plan -out aro.plan 		                       \
+		-var "subscription_id=$(TF_VAR_subscription_id)"     \
 		-var "cluster_name=aro-$(shell whoami)"
 
 	terraform apply aro.plan
@@ -26,6 +27,8 @@ create-private: init
 		-var "restrict_egress_traffic=true"		               \
 		-var "api_server_profile=Private"                    \
 		-var "ingress_profile=Private"                       \
+		-var "outbound_type=UserDefinedRouting"              \
+		-var "subscription_id=$(TF_VAR_subscription_id)"     \
 		-var "acr_private=false"
 
 	terraform apply aro.plan

@@ -70,6 +70,10 @@ resource "azureopenshift_redhatopenshift_cluster" "cluster" {
     version     = var.aro_version
   }
 
+  network_profile {
+    outbound_type = var.outbound_type
+  }
+
   depends_on = [
     azurerm_role_assignment.vnet,
     azurerm_firewall_network_rule_collection.firewall_network_rules
