@@ -126,5 +126,4 @@ variable "outbound_type" {
 variable "subscription_id" {
   type        = string
   description = "Azure Subscription ID (needed with the new Auth method)"
-  default     = "Use_Your_Subs_ID"
 }
