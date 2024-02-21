@@ -1,3 +1,4 @@
 pull_secret_path = "~/Downloads/pull-secret.txt"
 location = "eastus"
 subscription_id = "TO_BE_FILLED" ## also "export TF_VAR_subscription_id=xxx" can be used
+domain = "example.com"  ## required by the backend terraform provider
