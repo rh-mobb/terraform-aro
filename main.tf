@@ -144,7 +144,7 @@ output "console_url" {
   value = azurerm_redhat_openshift_cluster.cluster.console_url
 }
 
-output "api_servier_ip" {
+output "api_server_ip" {
   value = azurerm_redhat_openshift_cluster.cluster.api_server_profile[0].ip_address
 }
 
