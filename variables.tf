@@ -122,9 +122,9 @@ variable "aro_version" {
   type        = string
   description = <<EOF
   ARO version
-  Default "4.12.25"
+  Default "4.13.23"
   EOF
-  default     = "4.12.25"
+  default     = "4.13.23"
 }
 
 variable "acr_private" {
