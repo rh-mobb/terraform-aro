@@ -43,7 +43,7 @@ create-private-noegress: init
 		-var "api_server_profile=Private"                    \
 		-var "ingress_profile=Private"                       \
 		-var "aro_version=$(shell az aro get-versions -l eastus --query '[-1]' | sed 's/"//g')" \
-		-var "subscription_id=$(shell az account show --query id --output tsv)"     \
+		-var "subscription_id=$(shell az account show --query id --output tsv)"
 
 	terraform apply aro.plan
 
