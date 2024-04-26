@@ -34,6 +34,7 @@ resource "azurerm_role_assignment" "vnet" {
 }
 
 resource "azurerm_role_assignment" "firewall_rt" {
+    count                   = var.restrict_egress_traffic ? 1 : 0
     scope                   = azurerm_route_table.firewall_rt[0].id
     role_definition_name    = "Network Contributor"
     principal_id            = data.azuread_service_principal.aro_resource_provisioner.object_id
