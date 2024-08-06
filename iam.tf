@@ -17,7 +17,7 @@ resource "azuread_application_password" "cluster" {
 }
 
 resource "azuread_service_principal" "cluster" {
-    application_id  = azuread_application.cluster.application_id
+    application_id  = azuread_application.cluster.client_id
     owners          = [data.azuread_client_config.current.object_id]
 }
 
