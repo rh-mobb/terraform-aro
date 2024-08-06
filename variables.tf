@@ -160,11 +160,7 @@ variable "subscription_id" {
 variable "domain" {
   type        = string
   description = "Domain for the cluster."
-
-  validation {
-    condition     = var.domain != "" && var.domain != null
-    error_message = "Invalid 'domain'. Must be not be empty."
-  }
+  default     = null
 }
 
 variable "main_vm_size" {
