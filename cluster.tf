@@ -11,6 +11,7 @@ resource "random_string" "domain" {
   length           = 8
   special          = false
   upper            = false
+  numeric          = false
 }
 
 resource "azurerm_redhat_openshift_cluster" "cluster" {
@@ -68,6 +69,10 @@ resource "azurerm_redhat_openshift_cluster" "cluster" {
 
 output "console_url" {
   value = azurerm_redhat_openshift_cluster.cluster.console_url
+}
+
+output "api_url" {
+  value = azurerm_redhat_openshift_cluster.cluster.api_server_profile[0].url
 }
 
 output "api_server_ip" {
