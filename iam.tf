@@ -8,17 +8,17 @@ data "azuread_service_principal" "aro_resource_provisioner" {
 }
 
 resource "azuread_application" "cluster" {
-    display_name            = "${local.name_prefix}-cluster-app"
-    owners                  = [data.azuread_client_config.current.object_id]
-}
-
-resource "azuread_application_password" "cluster" {
-    application_object_id   = azuread_application.cluster.object_id
+  display_name = "${local.name_prefix}-cluster-app"
+  owners       = [data.azuread_client_config.current.object_id]
 }
 
 resource "azuread_service_principal" "cluster" {
-    application_id  = azuread_application.cluster.client_id
-    owners          = [data.azuread_client_config.current.object_id]
+  client_id = azuread_application.cluster.client_id
+  owners                       = [data.azuread_client_config.current.object_id]
+}
+
+resource "azuread_service_principal_password" "cluster" {
+  service_principal_id = azuread_service_principal.cluster.object_id
 }
 
 resource "azurerm_role_assignment" "main" {
