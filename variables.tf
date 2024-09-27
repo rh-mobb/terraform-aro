@@ -122,9 +122,9 @@ variable "aro_version" {
   type        = string
   description = <<EOF
   ARO version
-  Default "4.13.23"
+  Default "4.14.16"
   EOF
-  default     = "4.13.23"
+  default     = "4.14.16"
 }
 
 variable "acr_private" {
@@ -198,7 +198,7 @@ variable "worker_disk_size_gb" {
 
 variable "worker_node_count" {
   type        = number
-  default     = 3
+  default     = 6
   description = "Number of worker nodes."
 
   validation {

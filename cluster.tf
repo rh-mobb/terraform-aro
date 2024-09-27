@@ -58,7 +58,7 @@ resource "azurerm_redhat_openshift_cluster" "cluster" {
 
   service_principal {
     client_id     = azuread_application.cluster.client_id
-    client_secret = azuread_application_password.cluster.value
+    client_secret = azuread_service_principal_password.cluster.value
   }
 
   depends_on = [
