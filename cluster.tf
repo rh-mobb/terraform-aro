@@ -62,7 +62,7 @@ resource "azurerm_redhat_openshift_cluster" "cluster" {
   }
 
   depends_on = [
-    azurerm_role_assignment.vnet,
+    # azurerm_role_assignment.vnet,
     azurerm_firewall_network_rule_collection.firewall_network_rules
   ]
 }

@@ -1,4 +1,4 @@
-pull_secret_path = "~/Downloads/pull-secret.txt"
+pull_secret_path = "TO_BE_FILLED"
 location = "eastus"
 subscription_id = "TO_BE_FILLED" ## also "export TF_VAR_subscription_id=xxx" can be used
 api_server_profile = "Private"
@@ -6,3 +6,4 @@ ingress_profile = "Private"
 aro_version = "4.15.27"
 acr_private = false
 restrict_egress_traffic = false
+resource_group_name = "TO_BE_FILLED"
