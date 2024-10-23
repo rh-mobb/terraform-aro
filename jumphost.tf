@@ -1,7 +1,7 @@
 resource "azurerm_subnet" "jumphost-subnet" {
   count                = var.api_server_profile == "Private" || var.ingress_profile == "Private" ? 1 : 0
   name                 = "${local.name_prefix}-jumphost-subnet"
-  resource_group_name  = azurerm_resource_group.main.name
+  resource_group_name  = var.resource_group_name
   virtual_network_name = azurerm_virtual_network.main.name
   address_prefixes     = [var.aro_jumphost_subnet_cidr_block]
   service_endpoints    = ["Microsoft.ContainerRegistry"]
@@ -13,8 +13,8 @@ resource "azurerm_subnet" "jumphost-subnet" {
 resource "azurerm_public_ip" "jumphost-pip" {
   count                = var.api_server_profile == "Private" || var.ingress_profile == "Private" ? 1 : 0
   name                = "${local.name_prefix}-jumphost-pip"
-  resource_group_name = azurerm_resource_group.main.name
-  location            = azurerm_resource_group.main.location
+  resource_group_name = var.resource_group_name
+  location            = var.location
   allocation_method   = "Static"
   tags                = var.tags
 
@@ -23,8 +23,8 @@ resource "azurerm_public_ip" "jumphost-pip" {
 resource "azurerm_network_interface" "jumphost-nic" {
   count                = var.api_server_profile == "Private" || var.ingress_profile == "Private" ? 1 : 0
   name                = "${local.name_prefix}-jumphost-nic"
-  resource_group_name = azurerm_resource_group.main.name
-  location            = azurerm_resource_group.main.location
+  resource_group_name = var.resource_group_name
+  location            = var.location
   ip_configuration {
     name                          = "internal"
     subnet_id                     = azurerm_subnet.jumphost-subnet.0.id
@@ -37,8 +37,8 @@ resource "azurerm_network_interface" "jumphost-nic" {
 resource "azurerm_network_security_group" "jumphost-nsg" {
   count                = var.api_server_profile == "Private" || var.ingress_profile == "Private" ? 1 : 0
   name                = "${local.name_prefix}-jumphost-nsg"
-  resource_group_name = azurerm_resource_group.main.name
-  location            = azurerm_resource_group.main.location
+  resource_group_name = var.resource_group_name
+  location            = var.location
 
   security_rule {
     name                       = "allow_ssh_sg"
@@ -62,8 +62,8 @@ resource "azurerm_network_interface_security_group_association" "association" {
 resource "azurerm_linux_virtual_machine" "jumphost-vm" {
   count                = var.api_server_profile == "Private" || var.ingress_profile == "Private" ? 1 : 0
   name                = "${local.name_prefix}-jumphost"
-  resource_group_name = azurerm_resource_group.main.name
-  location            = azurerm_resource_group.main.location
+  resource_group_name = var.resource_group_name
+  location            = var.location
   size                = "Standard_D2s_v3"
   admin_username      = "aro"
 

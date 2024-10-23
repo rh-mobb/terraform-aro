@@ -16,8 +16,8 @@ resource "random_string" "domain" {
 
 resource "azurerm_redhat_openshift_cluster" "cluster" {
   name                = var.cluster_name
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
+  location            = var.location
+  resource_group_name = var.resource_group_name
   tags                = var.tags
 
   # NOTE: this input is missing to provide parity with the old provider at
@@ -57,8 +57,8 @@ resource "azurerm_redhat_openshift_cluster" "cluster" {
   }
 
   service_principal {
-    client_id     = azuread_application.cluster.client_id
-    client_secret = azuread_application_password.cluster.value
+    client_id     = var.aro_client_id
+    client_secret = var.aro_client_secret
   }
 
   depends_on = [

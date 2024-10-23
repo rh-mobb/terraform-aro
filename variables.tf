@@ -21,7 +21,7 @@ variable "location" {
 variable "resource_group_name" {
   type        = string
   default     = null
-  description = "ARO resource group name"
+  description = "Precreated resource group name"
 }
 
 variable "aro_virtual_network_cidr_block" {
@@ -205,4 +205,16 @@ variable "worker_node_count" {
     condition     = var.worker_node_count >= 3
     error_message = "Invalid 'worker_node_count'. Minimum of 3."
   }
+}
+
+variable "aro_client_id" {
+  type        = string
+  description = "Microsoft Entra ID Client ID for ARO cluster."
+  sensitive   = true
+}
+
+variable "aro_client_secret" {
+  type        = string
+  description = "Microsoft Entra ID Client Secret for ARO cluster."
+  sensitive   = true
 }

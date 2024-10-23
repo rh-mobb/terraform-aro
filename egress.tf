@@ -8,7 +8,7 @@
 resource "azurerm_subnet" "firewall_subnet" {
   count                = var.restrict_egress_traffic ? 1 : 0
   name                 = "AzureFirewallSubnet"
-  resource_group_name  = azurerm_resource_group.main.name
+  resource_group_name  = var.resource_group_name
   virtual_network_name = azurerm_virtual_network.main.name
   address_prefixes     = [var.aro_firewall_subnet_cidr_block]
   service_endpoints    = ["Microsoft.Storage", "Microsoft.ContainerRegistry"]
@@ -17,8 +17,8 @@ resource "azurerm_subnet" "firewall_subnet" {
 resource "azurerm_public_ip" "firewall_ip" {
   count               = var.restrict_egress_traffic ? 1 : 0
   name                = "${local.name_prefix}-fw-ip"
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
+  location            = var.location
+  resource_group_name = var.resource_group_name
   allocation_method   = "Static"
   sku                 = "Standard"
   tags                = var.tags
@@ -28,8 +28,8 @@ resource "azurerm_public_ip" "firewall_ip" {
 resource "azurerm_firewall" "firewall" {
   count               = var.restrict_egress_traffic ? 1 : 0
   name                = "${local.name_prefix}-firewall"
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
+  location            = var.location
+  resource_group_name = var.resource_group_name
   sku_name            = "AZFW_VNet"
   sku_tier            = "Standard"
 
@@ -44,8 +44,8 @@ resource "azurerm_firewall" "firewall" {
 resource "azurerm_route_table" "firewall_rt" {
   count               = var.restrict_egress_traffic ? 1 : 0
   name                = "${local.name_prefix}-fw-rt"
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
+  location            = var.location
+  resource_group_name = var.resource_group_name
 
   # ARO User Define Routing Route
   route {
@@ -64,7 +64,7 @@ resource "azurerm_firewall_network_rule_collection" "firewall_network_rules" {
   count               = var.restrict_egress_traffic ? 1 : 0
   name                = "allow-https"
   azure_firewall_name = azurerm_firewall.firewall.0.name
-  resource_group_name = azurerm_resource_group.main.name
+  resource_group_name = var.resource_group_name
   priority            = 100
   action              = "Allow"
 
@@ -90,7 +90,7 @@ resource "azurerm_firewall_application_rule_collection" "firewall_app_rules_aro"
   count               = var.restrict_egress_traffic ? 1 : 0
   name                = "ARO"
   azure_firewall_name = azurerm_firewall.firewall.0.name
-  resource_group_name = azurerm_resource_group.main.name
+  resource_group_name = var.resource_group_name
   priority            = 101
   action              = "Allow"
 
@@ -158,7 +158,7 @@ resource "azurerm_firewall_application_rule_collection" "firewall_app_rules_dock
   count               = var.restrict_egress_traffic ? 1 : 0
   name                = "Docker"
   azure_firewall_name = azurerm_firewall.firewall.0.name
-  resource_group_name = azurerm_resource_group.main.name
+  resource_group_name = var.resource_group_name
   priority            = 200
   action              = "Allow"
 

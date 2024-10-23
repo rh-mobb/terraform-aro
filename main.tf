@@ -3,17 +3,17 @@ locals {
   pull_secret = var.pull_secret_path != null && var.pull_secret_path != "" ? file(var.pull_secret_path) : null
 }
 
-resource "azurerm_resource_group" "main" {
-  name     = "${local.name_prefix}-rg"
-  location = var.location
+# resource "azurerm_resource_group" "main" {
+#   name     = "${local.name_prefix}-rg"
+#   location = var.location
 
-}
+# }
 
 ## Network resources
 resource "azurerm_virtual_network" "main" {
   name                = "${local.name_prefix}-vnet"
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
+  location            = var.location
+  resource_group_name = var.resource_group_name
   address_space       = [var.aro_virtual_network_cidr_block]
   tags                = var.tags
 
@@ -21,7 +21,7 @@ resource "azurerm_virtual_network" "main" {
 
 resource "azurerm_subnet" "control_plane_subnet" {
   name                                           = "${local.name_prefix}-cp-subnet"
-  resource_group_name                            = azurerm_resource_group.main.name
+  resource_group_name                            = var.resource_group_name
   virtual_network_name                           = azurerm_virtual_network.main.name
   address_prefixes                               = [var.aro_control_subnet_cidr_block]
   service_endpoints                              = ["Microsoft.Storage", "Microsoft.ContainerRegistry"]
@@ -34,7 +34,7 @@ resource "azurerm_subnet" "control_plane_subnet" {
 
 resource "azurerm_subnet" "machine_subnet" {
   name                 = "${local.name_prefix}-machine-subnet"
-  resource_group_name  = azurerm_resource_group.main.name
+  resource_group_name  = var.resource_group_name
   virtual_network_name = azurerm_virtual_network.main.name
   address_prefixes     = [var.aro_machine_subnet_cidr_block]
   service_endpoints    = ["Microsoft.Storage", "Microsoft.ContainerRegistry"]
