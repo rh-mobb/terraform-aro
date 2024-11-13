@@ -4,14 +4,14 @@
 # See docs at https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/redhat_openshift_cluster
 
 locals {
-    domain = var.domain != null ? var.domain : random_string.domain.result
+  domain = var.domain != null ? var.domain : random_string.domain.result
 }
 
 resource "random_string" "domain" {
-  length           = 8
-  special          = false
-  upper            = false
-  numeric          = false
+  length  = 8
+  special = false
+  upper   = false
+  numeric = false
 }
 
 resource "azurerm_redhat_openshift_cluster" "cluster" {
@@ -20,14 +20,12 @@ resource "azurerm_redhat_openshift_cluster" "cluster" {
   resource_group_name = azurerm_resource_group.main.name
   tags                = var.tags
 
-  # NOTE: this input is missing to provide parity with the old provider at
-  #       https://github.com/rh-mobb/terraform-provider-azureopenshift
-  # cluster_resource_group = "${var.cluster_name}-cluster-rg"
-
   cluster_profile {
     domain      = local.domain
     pull_secret = local.pull_secret
     version     = var.aro_version
+
+    managed_resource_group_name = "${azurerm_resource_group.main.name}-managed"
   }
 
   main_profile {
@@ -46,6 +44,8 @@ resource "azurerm_redhat_openshift_cluster" "cluster" {
     outbound_type = var.outbound_type
     pod_cidr      = var.aro_pod_cidr_block
     service_cidr  = var.aro_service_cidr_block
+
+    preconfigured_network_security_group_enabled = true
   }
 
   api_server_profile {
