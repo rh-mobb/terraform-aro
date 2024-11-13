@@ -7,7 +7,7 @@ terraform {
 
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~>4.3.0"
+      version = "~>4.9.0"
     }
   }
 }
@@ -19,5 +19,4 @@ provider "azurerm" {
       prevent_deletion_if_contains_resources = false
     }
   }
-
 }
