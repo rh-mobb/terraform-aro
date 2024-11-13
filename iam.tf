@@ -1,41 +1,75 @@
-data "azurerm_subscription" "current" {}
+data "azurerm_client_config" "current" {}
 
 data "azuread_client_config" "current" {}
 
-# Needed so we can assign it the 'Network Contributor' role on the created VNet
-data "azuread_service_principal" "aro_resource_provisioner" {
-    display_name            = "Azure Red Hat OpenShift RP"
+locals {
+  installer_service_principal_name = "${var.cluster_name}-installer"
+  cluster_service_principal_name   = "${var.cluster_name}-cluster"
 }
 
-resource "azuread_application" "cluster" {
-    display_name            = "${local.name_prefix}-cluster-app"
-    owners                  = [data.azuread_client_config.current.object_id]
+module "aro_permissions" {
+  source = "git::https://github.com/rh-mobb/terraform-aro-permissions.git?ref=v0.0.3"
+
+  # NOTE: terraform installation == 'api' installation_type (as opposed to 'cli')
+  installation_type = "api"
+
+  # do not output the credentials to a file
+  output_as_file = true
+
+  # cluster parameters
+  cluster_name           = var.cluster_name
+  vnet                   = azurerm_virtual_network.main.name
+  vnet_resource_group    = azurerm_resource_group.main.name
+  network_security_group = azurerm_network_security_group.aro.id
+
+  aro_resource_group = {
+    name   = azurerm_resource_group.main.name
+    create = false
+  }
+
+  # service principals
+  cluster_service_principal = {
+    name   = local.cluster_service_principal_name
+    create = true
+  }
+
+  installer_service_principal = {
+    name   = local.installer_service_principal_name
+    create = true
+  }
+
+  # use custom roles with minimal permissions
+  minimal_network_role = "${var.cluster_name}-network"
+  minimal_aro_role     = "${var.cluster_name}-aro"
+
+  # set custom permissions
+  nat_gateways = []
+  route_tables = var.restrict_egress_traffic ? [azurerm_route_table.firewall_rt[0].name] : []
+
+  # explicitly set location, subscription id and tenant id
+  location        = var.location
+  subscription_id = data.azurerm_client_config.current.subscription_id
+  tenant_id       = data.azurerm_client_config.current.tenant_id
 }
 
-resource "azuread_application_password" "cluster" {
-    application_object_id   = azuread_application.cluster.object_id
+#
+# NOTE: for whatever reason, in order for the installer provider to consume the password we create in the aro_permissions
+#       module, we must sleep here and let things calm down first and pass it through a 'terraform_data' resource (it 
+#       fails the first time if attempting to use directly but succeeds when continuing to apply)
+#
+resource "time_sleep" "wait" {
+  create_duration = "10s"
+
+  depends_on = [
+    module.aro_permissions,
+  ]
 }
 
-resource "azuread_service_principal" "cluster" {
-    application_id  = azuread_application.cluster.client_id
-    owners          = [data.azuread_client_config.current.object_id]
-}
+resource "terraform_data" "installer_credentials" {
+  input = {
+    client_id     = module.aro_permissions.installer_service_principal_client_id
+    client_secret = module.aro_permissions.installer_service_principal_client_secret
+  }
 
-resource "azurerm_role_assignment" "main" {
-        scope                   = data.azurerm_subscription.current.id
-        role_definition_name    = "Contributor"
-        principal_id            = azuread_service_principal.cluster.object_id
-}
-
-resource "azurerm_role_assignment" "vnet" {
-    scope                   = azurerm_virtual_network.main.id
-    role_definition_name    = "Network Contributor"
-    principal_id            = data.azuread_service_principal.aro_resource_provisioner.object_id
-}
-
-resource "azurerm_role_assignment" "firewall_rt" {
-    count                   = var.restrict_egress_traffic ? 1 : 0
-    scope                   = azurerm_route_table.firewall_rt[0].id
-    role_definition_name    = "Network Contributor"
-    principal_id            = data.azuread_service_principal.aro_resource_provisioner.object_id
+  depends_on = [time_sleep.wait]
 }

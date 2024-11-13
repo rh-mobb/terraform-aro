@@ -15,6 +15,9 @@ resource "random_string" "domain" {
 }
 
 resource "azurerm_redhat_openshift_cluster" "cluster" {
+  # NOTE: use the installer service principal that we created to create our cluster
+  provider = azurerm.installer
+
   name                = var.cluster_name
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
@@ -57,8 +60,8 @@ resource "azurerm_redhat_openshift_cluster" "cluster" {
   }
 
   service_principal {
-    client_id     = azuread_application.cluster.client_id
-    client_secret = azuread_application_password.cluster.value
+    client_id     = module.aro_permissions.cluster_service_principal_client_id
+    client_secret = module.aro_permissions.cluster_service_principal_client_secret
   }
 
   depends_on = [
