@@ -20,14 +20,12 @@ resource "azurerm_redhat_openshift_cluster" "cluster" {
   resource_group_name = azurerm_resource_group.main.name
   tags                = var.tags
 
-  # NOTE: this input is missing to provide parity with the old provider at
-  #       https://github.com/rh-mobb/terraform-provider-azureopenshift
-  # cluster_resource_group = "${var.cluster_name}-cluster-rg"
-
   cluster_profile {
     domain      = local.domain
     pull_secret = local.pull_secret
     version     = var.aro_version
+
+    managed_resource_group_name = "${azurerm_resource_group.main.name}-managed"
   }
 
   main_profile {
