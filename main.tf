@@ -17,19 +17,21 @@ resource "azurerm_virtual_network" "main" {
 }
 
 resource "azurerm_subnet" "control_plane_subnet" {
-  name                 = "${local.name_prefix}-cp-subnet"
-  resource_group_name  = azurerm_resource_group.main.name
-  virtual_network_name = azurerm_virtual_network.main.name
-  address_prefixes     = [var.aro_control_subnet_cidr_block]
-  service_endpoints    = ["Microsoft.Storage", "Microsoft.ContainerRegistry"]
+  name                              = "${local.name_prefix}-cp-subnet"
+  resource_group_name               = azurerm_resource_group.main.name
+  virtual_network_name              = azurerm_virtual_network.main.name
+  address_prefixes                  = [var.aro_control_subnet_cidr_block]
+  private_endpoint_network_policies = "Disabled"
+  service_endpoints                 = ["Microsoft.Storage", "Microsoft.ContainerRegistry"]
 }
 
 resource "azurerm_subnet" "machine_subnet" {
-  name                 = "${local.name_prefix}-machine-subnet"
-  resource_group_name  = azurerm_resource_group.main.name
-  virtual_network_name = azurerm_virtual_network.main.name
-  address_prefixes     = [var.aro_machine_subnet_cidr_block]
-  service_endpoints    = ["Microsoft.Storage", "Microsoft.ContainerRegistry"]
+  name                              = "${local.name_prefix}-machine-subnet"
+  resource_group_name               = azurerm_resource_group.main.name
+  virtual_network_name              = azurerm_virtual_network.main.name
+  address_prefixes                  = [var.aro_machine_subnet_cidr_block]
+  private_endpoint_network_policies = "Disabled"
+  service_endpoints                 = ["Microsoft.Storage", "Microsoft.ContainerRegistry"]
 }
 
 resource "azurerm_network_security_group" "aro" {
