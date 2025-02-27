@@ -31,7 +31,7 @@ resource "terraform_data" "aro_permission_wait" {
 }
 
 module "aro_permissions" {
-  source = "/Users/dscott/VSCode/github/redhat/terraform-aro-permissions"
+  source = "git::https://github.com/rh-mobb/terraform-aro-permissions.git?ref=v0.1.1"
 
   # NOTE: terraform installation == 'api' installation_type (as opposed to 'cli')
   installation_type = "api"
