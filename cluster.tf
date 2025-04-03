@@ -4,7 +4,9 @@
 # See docs at https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/redhat_openshift_cluster
 
 locals {
-  domain = var.domain != null ? var.domain : random_string.domain.result
+  domain      = var.domain != null && var.domain != "" ? var.domain : random_string.domain.result
+  name_prefix = var.cluster_name
+  pull_secret = var.pull_secret_path != null && var.pull_secret_path != "" ? file(var.pull_secret_path) : null
 }
 
 resource "random_string" "domain" {

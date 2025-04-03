@@ -206,3 +206,9 @@ variable "worker_node_count" {
     error_message = "Invalid 'worker_node_count'. Minimum of 3."
   }
 }
+
+variable "apply_restricted_policies" {
+  type        = bool
+  default     = false
+  description = "Apply further restricted Azure Policy to further restrict permissions for identities."
+}

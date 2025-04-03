@@ -31,7 +31,7 @@ resource "terraform_data" "aro_permission_wait" {
 }
 
 module "aro_permissions" {
-  source = "git::https://github.com/rh-mobb/terraform-aro-permissions.git?ref=v0.1.1"
+  source = "git::https://github.com/rh-mobb/terraform-aro-permissions.git?ref=v0.2.1"
 
   # NOTE: terraform installation == 'api' installation_type (as opposed to 'cli')
   installation_type = "api"
@@ -67,27 +67,19 @@ module "aro_permissions" {
 
   # set custom permissions
   nat_gateways = []
+  subnets      = [azurerm_subnet.control_plane_subnet.name, azurerm_subnet.machine_subnet.name]
   route_tables = var.restrict_egress_traffic ? [azurerm_route_table.firewall_rt[0].name] : []
 
   # further restrict via policy
-  # TODO: uncomment this only when PR https://github.com/Azure/ARO-RP/pull/4087 is
-  #       merged and released.  Currently, the subnet/write permission is still 
-  #       needed as the resource provider does a CreateOrUpdate regardless of
-  #       correct subnet configuration, which needs subnet/write.  Once the above
-  #       PR is merged and active, we can uncomment the below.
-  #
-  # TODO: also ensure this gets moved below apply_vnet_policy for consistency in 
-  #       ordering of code.
-  #
-  # apply_subnet_policy     = var.outbound_type == "UserDefinedRouting"
   managed_resource_group   = "${azurerm_resource_group.main.name}-managed"
-  apply_vnet_policy        = var.outbound_type == "UserDefinedRouting"
-  apply_route_table_policy = var.outbound_type == "UserDefinedRouting"
-  apply_nat_gateway_policy = var.outbound_type == "UserDefinedRouting"
-  apply_nsg_policy         = true
-  apply_dns_policy         = true
-  apply_private_dns_policy = true
-  apply_public_ip_policy   = var.api_server_profile != "Public" && var.ingress_profile != "Public"
+  apply_vnet_policy        = var.apply_restricted_policies
+  apply_subnet_policy      = var.apply_restricted_policies
+  apply_route_table_policy = var.apply_restricted_policies
+  apply_nat_gateway_policy = var.apply_restricted_policies
+  apply_nsg_policy         = var.apply_restricted_policies
+  apply_dns_policy         = var.apply_restricted_policies && var.domain != null && var.domain != ""
+  apply_private_dns_policy = var.apply_restricted_policies && var.domain != null && var.domain != ""
+  apply_public_ip_policy   = var.apply_restricted_policies && var.api_server_profile != "Public" && var.ingress_profile != "Public"
 
   # explicitly set location, subscription id and tenant id
   location        = var.location
@@ -103,9 +95,7 @@ module "aro_permissions" {
 resource "time_sleep" "wait" {
   create_duration = "10s"
 
-  depends_on = [
-    module.aro_permissions,
-  ]
+  depends_on = [module.aro_permissions]
 }
 
 resource "terraform_data" "installer_credentials" {

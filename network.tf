@@ -1,11 +1,7 @@
-locals {
-  name_prefix = var.cluster_name
-  pull_secret = var.pull_secret_path != null && var.pull_secret_path != "" ? file(var.pull_secret_path) : null
-}
-
 resource "azurerm_resource_group" "main" {
   name     = "${local.name_prefix}-rg"
   location = var.location
+  tags     = var.tags
 }
 
 resource "azurerm_virtual_network" "main" {
@@ -38,6 +34,7 @@ resource "azurerm_network_security_group" "aro" {
   name                = "${local.name_prefix}-nsg"
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
+  tags                = var.tags
 }
 
 // TODO: lockdown for private clusters
