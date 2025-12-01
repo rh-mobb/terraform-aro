@@ -45,6 +45,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-terraform-
 
+      - name: Create dummy SSH keys for validation
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keygen -t rsa -b 2048 -f ~/.ssh/id_rsa -N "" -q
+          chmod 600 ~/.ssh/id_rsa
+          chmod 644 ~/.ssh/id_rsa.pub
+
       - name: Run pre-commit checks
         id: pr-checks
         run: make pr

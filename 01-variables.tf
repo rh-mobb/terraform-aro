@@ -217,3 +217,15 @@ variable "apply_restricted_policies" {
   default     = false
   description = "Apply additional Azure Policy restrictions to further limit permissions for service principals and identities. Recommended for production deployments. Default: false (permissive for development/example use)"
 }
+
+variable "jumphost_ssh_public_key_path" {
+  type        = string
+  default     = "~/.ssh/id_rsa.pub"
+  description = "Path to the SSH public key file for jumphost VM access. Default: ~/.ssh/id_rsa.pub. For CI/CD, set to a dummy file path or create a temporary key."
+}
+
+variable "jumphost_ssh_private_key_path" {
+  type        = string
+  default     = "~/.ssh/id_rsa"
+  description = "Path to the SSH private key file for jumphost VM access. Default: ~/.ssh/id_rsa. For CI/CD, set to a dummy file path or create a temporary key."
+}

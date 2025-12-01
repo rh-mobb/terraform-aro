@@ -78,7 +78,7 @@ resource "azurerm_linux_virtual_machine" "jumphost_vm" {
 
   admin_ssh_key {
     username   = "aro"
-    public_key = file("~/.ssh/id_rsa.pub")
+    public_key = file(var.jumphost_ssh_public_key_path)
   }
 
   os_disk {
@@ -98,7 +98,7 @@ resource "azurerm_linux_virtual_machine" "jumphost_vm" {
       type        = "ssh"
       host        = azurerm_public_ip.jumphost_pip[0].ip_address
       user        = "aro"
-      private_key = file("~/.ssh/id_rsa")
+      private_key = file(var.jumphost_ssh_private_key_path)
     }
     inline = [
       "sudo dnf install telnet wget bash-completion -y",
