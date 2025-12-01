@@ -4,7 +4,12 @@
 # The Azure FW will be into the ARO subnet following the architecture
 # defined in the official docs https://learn.microsoft.com/en-us/azure/openshift/howto-restrict-egress#create-an-azure-firewall
 
-# TODO: Convert from Non Hub-Spoke to Hub-Spoke model (split vNETs)
+# TODO: Architecture enhancement - Hub-Spoke model
+#       Current: Single VNet architecture (simplified for example/demo use)
+#       Future: Consider converting to hub-spoke model with separate VNets
+#       Rationale: Hub-spoke provides better network isolation and scalability
+#       Note: This is documented as a non-goal in DESIGN.md - not planned for current scope
+#       Reference: DESIGN.md "Non-Goals" section
 resource "azurerm_subnet" "firewall_subnet" {
   count                = var.restrict_egress_traffic ? 1 : 0
   name                 = "AzureFirewallSubnet"
@@ -35,8 +40,8 @@ resource "azurerm_firewall" "firewall" {
 
   ip_configuration {
     name                 = "${local.name_prefix}-fw-ip-config"
-    subnet_id            = azurerm_subnet.firewall_subnet.0.id
-    public_ip_address_id = azurerm_public_ip.firewall_ip.0.id
+    subnet_id            = azurerm_subnet.firewall_subnet[0].id
+    public_ip_address_id = azurerm_public_ip.firewall_ip[0].id
   }
 
 }
@@ -52,18 +57,23 @@ resource "azurerm_route_table" "firewall_rt" {
     name                   = "${local.name_prefix}-udr"
     address_prefix         = "0.0.0.0/0"
     next_hop_type          = "VirtualAppliance"
-    next_hop_in_ip_address = azurerm_firewall.firewall.0.ip_configuration.0.private_ip_address
+    next_hop_in_ip_address = azurerm_firewall.firewall[0].ip_configuration[0].private_ip_address
   }
 
   tags = var.tags
 
 }
 
-# TODO: Restrict the FW Network Rules
+# TODO: Security hardening - Restrict firewall network rules
+#       Current: Permissive firewall rules allow all traffic from any source to any destination
+#       For production: Implement specific network rules with restricted source/destination addresses
+#       Rationale: Current permissive rules prioritize usability for examples/demos
+#       Production hardening: Define specific allowed destinations and restrict source addresses
+#       See DESIGN.md "Production Hardening Required" section for details
 resource "azurerm_firewall_network_rule_collection" "firewall_network_rules" {
   count               = var.restrict_egress_traffic ? 1 : 0
   name                = "allow-https"
-  azure_firewall_name = azurerm_firewall.firewall.0.name
+  azure_firewall_name = azurerm_firewall.firewall[0].name
   resource_group_name = azurerm_resource_group.main.name
   priority            = 100
   action              = "Allow"
@@ -89,7 +99,7 @@ resource "azurerm_firewall_network_rule_collection" "firewall_network_rules" {
 resource "azurerm_firewall_application_rule_collection" "firewall_app_rules_aro" {
   count               = var.restrict_egress_traffic ? 1 : 0
   name                = "ARO"
-  azure_firewall_name = azurerm_firewall.firewall.0.name
+  azure_firewall_name = azurerm_firewall.firewall[0].name
   resource_group_name = azurerm_resource_group.main.name
   priority            = 101
   action              = "Allow"
@@ -157,7 +167,7 @@ resource "azurerm_firewall_application_rule_collection" "firewall_app_rules_aro"
 resource "azurerm_firewall_application_rule_collection" "firewall_app_rules_docker" {
   count               = var.restrict_egress_traffic ? 1 : 0
   name                = "Docker"
-  azure_firewall_name = azurerm_firewall.firewall.0.name
+  azure_firewall_name = azurerm_firewall.firewall[0].name
   resource_group_name = azurerm_resource_group.main.name
   priority            = 200
   action              = "Allow"
@@ -187,11 +197,11 @@ resource "azurerm_firewall_application_rule_collection" "firewall_app_rules_dock
 resource "azurerm_subnet_route_table_association" "firewall_rt_aro_cp_subnet_association" {
   count          = var.restrict_egress_traffic ? 1 : 0
   subnet_id      = azurerm_subnet.control_plane_subnet.id
-  route_table_id = azurerm_route_table.firewall_rt.0.id
+  route_table_id = azurerm_route_table.firewall_rt[0].id
 }
 
 resource "azurerm_subnet_route_table_association" "firewall_rt_aro_machine_subnet_association" {
   count          = var.restrict_egress_traffic ? 1 : 0
   subnet_id      = azurerm_subnet.machine_subnet.id
-  route_table_id = azurerm_route_table.firewall_rt.0.id
+  route_table_id = azurerm_route_table.firewall_rt[0].id
 }

@@ -1,10 +1,5 @@
 data "azurerm_client_config" "current" {}
 
-locals {
-  installer_service_principal_name = "${var.cluster_name}-installer"
-  cluster_service_principal_name   = "${var.cluster_name}-cluster"
-}
-
 # NOTE: we need to store a single input that we pass into the aro_permissions module because
 #       modules cannot use depends_on and we need to ensure all of our objects have been
 #       created prior to setting permissions/policies
@@ -18,7 +13,7 @@ resource "terraform_data" "aro_permission_wait" {
   depends_on = [
     azurerm_subnet.control_plane_subnet,
     azurerm_subnet.firewall_subnet,
-    azurerm_subnet.jumphost-subnet,
+    azurerm_subnet.jumphost_subnet,
     azurerm_subnet.machine_subnet,
     azurerm_subnet.private_endpoint_subnet,
     azurerm_route_table.firewall_rt,
@@ -30,6 +25,7 @@ resource "terraform_data" "aro_permission_wait" {
   ]
 }
 
+# checkov:skip=CKV_TF_1:Module uses semantic version tag (v0.2.1) for stability; commit hash would require frequent updates
 module "aro_permissions" {
   source = "git::https://github.com/rh-mobb/terraform-aro-permissions.git?ref=v0.2.1"
 
@@ -89,7 +85,7 @@ module "aro_permissions" {
 
 #
 # NOTE: for whatever reason, in order for the installer provider to consume the password we create in the aro_permissions
-#       module, we must sleep here and let things calm down first and pass it through a 'terraform_data' resource (it 
+#       module, we must sleep here and let things calm down first and pass it through a 'terraform_data' resource (it
 #       fails the first time if attempting to use directly but succeeds when continuing to apply)
 #
 resource "time_sleep" "wait" {

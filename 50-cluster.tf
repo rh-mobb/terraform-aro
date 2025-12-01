@@ -3,12 +3,6 @@
 
 # See docs at https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/redhat_openshift_cluster
 
-locals {
-  domain      = var.domain != null && var.domain != "" ? var.domain : random_string.domain.result
-  name_prefix = var.cluster_name
-  pull_secret = var.pull_secret_path != null && var.pull_secret_path != "" ? file(var.pull_secret_path) : null
-}
-
 resource "random_string" "domain" {
   length  = 8
   special = false
@@ -28,7 +22,7 @@ resource "azurerm_redhat_openshift_cluster" "cluster" {
   cluster_profile {
     domain      = local.domain
     pull_secret = local.pull_secret
-    version     = var.aro_version
+    version     = local.aro_version
 
     managed_resource_group_name = "${azurerm_resource_group.main.name}-managed"
   }
@@ -70,20 +64,4 @@ resource "azurerm_redhat_openshift_cluster" "cluster" {
     module.aro_permissions,
     azurerm_firewall_network_rule_collection.firewall_network_rules,
   ]
-}
-
-output "console_url" {
-  value = azurerm_redhat_openshift_cluster.cluster.console_url
-}
-
-output "api_url" {
-  value = azurerm_redhat_openshift_cluster.cluster.api_server_profile[0].url
-}
-
-output "api_server_ip" {
-  value = azurerm_redhat_openshift_cluster.cluster.api_server_profile[0].ip_address
-}
-
-output "ingress_ip" {
-  value = azurerm_redhat_openshift_cluster.cluster.ingress_profile[0].ip_address
 }

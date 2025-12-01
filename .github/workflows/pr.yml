@@ -1,0 +1,96 @@
+name: Pre-commit Checks
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  pr-checks:
+    name: Run pre-commit checks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.12.2"
+          terraform_wrapper: false
+
+      - name: Setup tflint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: "latest"
+
+      - name: Setup checkov (optional)
+        run: |
+          pip install checkov==3.2.495 || echo "checkov installation failed, continuing without it"
+
+      - name: Cache Terraform providers
+        uses: actions/cache@v4
+        with:
+          path: |
+            .terraform
+            .terraform.lock.hcl
+          key: ${{ runner.os }}-terraform-${{ hashFiles('**/*.tf', '**/*.tfvars') }}
+          restore-keys: |
+            ${{ runner.os }}-terraform-
+
+      - name: Run pre-commit checks
+        id: pr-checks
+        run: make pr
+
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            // Delete existing bot comments
+            const botComments = comments.filter(comment =>
+              comment.user.type === 'Bot' && comment.body.includes('Pre-commit Checks')
+            );
+            for (const comment of botComments) {
+              await github.rest.issues.deleteComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: comment.id,
+              });
+            }
+
+            // Create new comment based on step outcome
+            const stepOutcome = '${{ steps.pr-checks.outcome }}';
+            let comment = '## Pre-commit Checks\n\n';
+
+            if (stepOutcome === 'success') {
+              comment += '✅ All pre-commit checks passed!\n\n';
+              comment += '- ✅ Terraform validate\n';
+              comment += '- ✅ Terraform fmt\n';
+              comment += '- ✅ tflint\n';
+              comment += '- ✅ checkov (if installed)\n\n';
+              comment += '**Note:** Plan step is skipped in CI. Run `make test` locally for full test suite including plan.';
+            } else {
+              comment += '❌ Pre-commit checks failed. Please review the logs above.\n\n';
+              comment += 'Run `make pr` locally to see detailed errors.';
+            }
+
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
