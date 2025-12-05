@@ -52,6 +52,55 @@ Optional tools (for enhanced testing):
 
    >NOTE2: Private Clusters can be created [without Public IP using the UserDefineRouting](https://learn.microsoft.com/en-us/azure/openshift/howto-create-private-cluster-4x#create-a-private-cluster-without-a-public-ip-address) flag in the outboundtype=UserDefineRouting variable. By default LoadBalancer is used for the egress.
 
+### ARO Managed Identities (Preview)
+
+Azure Red Hat OpenShift supports managed identities (currently in tech preview) as an alternative to service principals. Managed identities provide enhanced security by eliminating the need to manage credentials.
+
+**Important Notes:**
+- This feature is currently in **tech preview** and not recommended for production use
+- Managed identities require ARM template deployment (the `azurerm_redhat_openshift_cluster` resource doesn't yet support managed identities)
+- The aro-permissions module automatically creates 9 managed identities when enabled
+- Existing clusters using service principals cannot be migrated to managed identities
+
+**To enable managed identities:**
+
+**Option 1: Using Makefile (Recommended)**
+
+Deploy a public cluster with managed identities:
+```bash
+make create-managed-identity
+```
+
+Deploy a private cluster with managed identities:
+```bash
+make create-private-managed-identity
+```
+
+**Option 2: Using terraform.tfvars**
+
+1. Set `enable_managed_identities = true` in your `terraform.tfvars`:
+
+   ```hcl
+   enable_managed_identities = true
+   ```
+
+2. Deploy your cluster as usual:
+
+   ```bash
+   make create
+   ```
+
+When `enable_managed_identities = true`:
+- The aro-permissions module creates 9 user-assigned managed identities
+- Role assignments are automatically configured for network resources
+- The cluster is deployed via ARM template with `platformWorkloadIdentityProfile` configuration
+- All cluster outputs work the same way as service principal deployments
+
+**Known Limitations:**
+- **Network Security Groups (NSGs):** Managed identity clusters currently cannot have NSGs attached to the control plane and worker subnets. The NSG resource is still created (required for managed identity permissions), but it is not associated with the subnets. This is a current limitation of the managed identity preview feature. For production deployments requiring NSG protection, consider using service principal-based deployments until this limitation is resolved.
+
+For more information, see the [Microsoft documentation on ARO managed identities](https://learn.microsoft.com/en-us/azure/openshift/howto-create-openshift-cluster?pivots=aro-deploy-az-cli).
+
 ## Test Connectivity
 
 ### Quick Login (Recommended)
@@ -211,9 +260,12 @@ See `.github/workflows/pr.yml` for details.
 - `make create` - Create public ARO cluster
 - `make create-private` - Create private ARO cluster with egress restriction
 - `make create-private-noegress` - Create private ARO cluster without egress restriction
+- `make create-managed-identity` - Create public ARO cluster with managed identities (preview)
+- `make create-private-managed-identity` - Create private ARO cluster with managed identities (preview)
 - `make login` - Log into ARO cluster (requires cluster to be deployed)
-- `make destroy` - Destroy cluster (interactive)
-- `make destroy-force` - Destroy cluster (non-interactive)
+- `make destroy` - Destroy service principal-based cluster (non-interactive, uses -auto-approve)
+- `make destroy-managed-identity` - Destroy managed identity cluster (interactive, with wait/verification)
+- `make destroy-managed-identity.force` - Destroy managed identity cluster (non-interactive, with wait/verification)
 - `make clean` - Remove terraform state and providers
 - `make validate` - Run terraform validate
 - `make fmt` - Check terraform formatting
@@ -277,8 +329,27 @@ When ready to release a new version:
 
 ## Cleanup
 
-1. Delete Cluster and Resources
+### Service Principal Clusters
 
-    ```bash
-    make destroy-force
-    ```
+Delete cluster and all resources:
+
+```bash
+make destroy
+```
+
+### Managed Identity Clusters
+
+**Important:** Managed identity clusters require special destroy handling to ensure proper cleanup order. The destroy process will:
+1. Delete the cluster first
+2. Wait and verify the cluster is fully deleted (up to 10 minutes)
+3. Then delete remaining resources (managed identities, networks, etc.)
+
+This prevents network resources from being destroyed while the cluster still exists.
+
+Delete managed identity cluster and all resources:
+
+```bash
+make destroy-managed-identity.force
+```
+
+**Why a separate target?** Managed identity clusters use ARM template deployments which have different destroy behavior than native Terraform resources. The separate target ensures proper ordering and verification.

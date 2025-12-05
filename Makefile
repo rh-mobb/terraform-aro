@@ -47,21 +47,96 @@ create-private-noegress: init
 
 	terraform apply aro.plan
 
-.PHONY: destroy
-destroy:
-	terraform destroy -var "subscription_id=$(shell az account show --query id --output tsv)"
+.PHONY: create-managed-identity
+create-managed-identity: init
+	# NOTE: Deploys ARO cluster with managed identities (preview feature)
+	# NOTE: aro_version is optional - latest version will be auto-detected if not provided
+	terraform plan -out aro.plan \
+		-var "subscription_id=$(shell az account show --query id --output tsv)" \
+		-var "cluster_name=aro-$(shell whoami)" \
+		-var "enable_managed_identities=true"
 
-.PHONY: destroy.force
-destroy.force:
-	terraform destroy -auto-approve -var "subscription_id=$(shell az account show --query id --output tsv)"
+	terraform apply aro.plan
+
+.PHONY: create-private-managed-identity
+create-private-managed-identity: init
+	# NOTE: Deploys private ARO cluster with managed identities (preview feature)
+	# NOTE: aro_version is optional - latest version will be auto-detected if not provided
+	terraform plan -out aro.plan \
+		-var "cluster_name=aro-$(shell whoami)" \
+		-var "enable_managed_identities=true" \
+		-var "restrict_egress_traffic=true" \
+		-var "api_server_profile=Private" \
+		-var "ingress_profile=Private" \
+		-var "outbound_type=UserDefinedRouting" \
+		-var "subscription_id=$(shell az account show --query id --output tsv)" \
+		-var "acr_private=false"
+
+	terraform apply aro.plan
 
 .PHONY: delete
 delete: destroy
+
+.PHONY: destroy
+destroy:
+	# NOTE: Check if this is a managed identity cluster - if so, use destroy-managed-identity instead
+	@bash -c '\
+	set -e; \
+	if terraform state list 2>/dev/null | grep -q "azurerm_resource_group_template_deployment.cluster_managed_identity"; then \
+		echo "❌ Error: This is a managed identity cluster."; \
+		echo ""; \
+		echo "Managed identity clusters require special destroy handling."; \
+		echo "Please use: make destroy-managed-identity"; \
+		echo ""; \
+		exit 1; \
+	fi; \
+	echo "Destroying ARO cluster resources (service principal)..."; \
+	terraform destroy -auto-approve -var "subscription_id=$$(az account show --query id --output tsv)"'
+
+.PHONY: destroy-managed-identity
+destroy-managed-identity:
+	# NOTE: Destroy order is critical for managed identity clusters - cluster must be deleted BEFORE modules
+	#       ARM template deployments require explicit wait/verification to prevent network resource destruction conflicts
+	@./scripts/destroy-managed-identity.sh
+
+
 
 .PHONY: clean
 clean:
 	rm -rf terraform.tfstate*
 	rm -rf .terraform*
+
+.PHONY: show_credentials
+show_credentials:
+	@bash -c '\
+	set -e; \
+	echo "Retrieving ARO cluster credentials..."; \
+	CLUSTER_NAME=$$(terraform output -raw cluster_name 2>/dev/null) || { echo "Error: Could not get cluster_name from terraform output. Make sure terraform has been applied."; exit 1; }; \
+	RESOURCE_GROUP=$$(terraform output -raw resource_group_name 2>/dev/null) || { echo "Error: Could not get resource_group_name from terraform output. Make sure terraform has been applied."; exit 1; }; \
+	API_URL=$$(terraform output -raw api_url 2>/dev/null) || { echo "Error: Could not get api_url from terraform output. Make sure terraform has been applied."; exit 1; }; \
+	CONSOLE_URL=$$(terraform output -raw console_url 2>/dev/null) || { echo "Error: Could not get console_url from terraform output. Make sure terraform has been applied."; exit 1; }; \
+	echo "Cluster: $$CLUSTER_NAME"; \
+	echo "Resource Group: $$RESOURCE_GROUP"; \
+	echo "API URL: $$API_URL"; \
+	echo "Console URL: $$CONSOLE_URL"; \
+	echo ""; \
+	CREDS_JSON=$$(az aro list-credentials --name $$CLUSTER_NAME --resource-group $$RESOURCE_GROUP --output json 2>/dev/null) || { echo "Error: Could not get cluster credentials. Make sure you'\''re logged into Azure CLI."; exit 1; }; \
+	if command -v jq >/dev/null 2>&1; then \
+		KUBEADMIN_USERNAME=$$(echo $$CREDS_JSON | jq -r ".kubeadminUsername" 2>/dev/null); \
+		KUBEADMIN_PASSWORD=$$(echo $$CREDS_JSON | jq -r ".kubeadminPassword" 2>/dev/null); \
+	else \
+		KUBEADMIN_USERNAME=$$(echo $$CREDS_JSON | grep -o "\"kubeadminUsername\": \"[^\"]*\"" | cut -d"\"" -f4); \
+		KUBEADMIN_PASSWORD=$$(echo $$CREDS_JSON | grep -o "\"kubeadminPassword\": \"[^\"]*\"" | cut -d"\"" -f4); \
+	fi; \
+	if [ -z "$$KUBEADMIN_USERNAME" ] || [ -z "$$KUBEADMIN_PASSWORD" ]; then \
+		echo "Error: Could not extract credentials from az aro list-credentials output"; \
+		exit 1; \
+	fi; \
+	echo "Username: $$KUBEADMIN_USERNAME"; \
+	echo "Password: $$KUBEADMIN_PASSWORD"; \
+	echo ""; \
+	echo "To login, run: oc login $$API_URL --username=$$KUBEADMIN_USERNAME --password=$$KUBEADMIN_PASSWORD --insecure-skip-tls-verify=true"; \
+	echo "Or use: make login"'
 
 .PHONY: login
 login:

@@ -16,6 +16,8 @@ This project provides Terraform infrastructure-as-code for deploying Azure Red H
    - Azure Red Hat OpenShift cluster resource
    - Configurable control plane and worker node profiles
    - Supports public and private API/ingress visibility
+   - Conditional deployment: Service Principal (default) or Managed Identities (preview)
+   - Managed identities use ARM template deployment (`azurerm_resource_group_template_deployment`)
 
 2. **Networking** (`10-network.tf`)
    - Virtual network with CIDR blocks for ARO
@@ -25,8 +27,11 @@ This project provides Terraform infrastructure-as-code for deploying Azure Red H
    - Service endpoints for Storage and Container Registry
 
 3. **Identity & Access Management** (`20-iam.tf`)
-   - Service principal management via `terraform-aro-permissions` module
-   - Installer and cluster service principals
+   - Service principal management via vendored `terraform-aro-permissions` module (v0.2.1)
+   - Module located at `./modules/aro-permissions/`
+   - Installer and cluster service principals (default)
+   - Managed identities support (preview feature, enabled via `enable_managed_identities` variable)
+   - When managed identities enabled: Creates 9 user-assigned managed identities
    - Minimal permission roles
    - Optional Azure Policy restrictions
 
@@ -87,19 +92,47 @@ This project provides Terraform infrastructure-as-code for deploying Azure Red H
 
 ### 3. Service Principal Management
 
-**Decision:** Use external `terraform-aro-permissions` module for service principal creation and permissions.
+**Decision:** Use vendored `terraform-aro-permissions` module (v0.2.1) for service principal creation and permissions.
 
 **Rationale:**
 - Separates concerns (IAM vs infrastructure)
 - Reuses proven module with minimal permissions
 - Simplifies permission management
+- Self-contained repository (no external git dependencies)
+- Faster terraform init (no git clone required)
 
 **Implementation:**
+- Module vendored in `./modules/aro-permissions/`
+- Original source: `https://github.com/rh-mobb/terraform-aro-permissions.git?ref=v0.2.1`
 - Module creates installer and cluster service principals
 - Uses custom roles with minimal required permissions
 - Supports optional Azure Policy restrictions
 
-### 4. File Organization
+### 4. Managed Identities Support (Preview)
+
+**Decision:** Support Azure Red Hat OpenShift managed identities via ARM template deployment.
+
+**Rationale:**
+- Managed identities provide enhanced security (no credential management)
+- Follows Azure best practices for identity management
+- Required for future-proofing as managed identities become GA
+- Leverages existing aro-permissions module support for managed identities
+
+**Implementation:**
+- Feature flag: `enable_managed_identities` (default: false)
+- When enabled: aro-permissions module creates 9 user-assigned managed identities
+- Cluster deployment uses ARM template (`azurerm_resource_group_template_deployment`)
+- ARM template uses API version `2024-08-12-preview` (required for managed identities)
+- ARM template includes `platformWorkloadIdentityProfile` and `identity` blocks
+- Role assignments between managed identities handled by ARM template
+- Outputs work identically for both service principal and managed identity deployments
+
+**Limitations:**
+- Currently in tech preview (not recommended for production)
+- Requires ARM template deployment (Terraform resource doesn't support it yet)
+- Existing clusters cannot be migrated from service principals to managed identities
+
+### 5. File Organization
 
 **Decision:** Organize Terraform code by resource type/functionality into separate files.
 
@@ -220,6 +253,6 @@ This project serves as an **example/demo/development** tool for deploying ARO cl
 
 - [Azure Red Hat OpenShift Documentation](https://learn.microsoft.com/en-us/azure/openshift/)
 - [Terraform ARO Provider](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/redhat_openshift_cluster)
-- [terraform-aro-permissions Module](https://github.com/rh-mobb/terraform-aro-permissions)
+- [terraform-aro-permissions Module](https://github.com/rh-mobb/terraform-aro-permissions) (vendored at `./modules/aro-permissions/` - v0.2.1)
 - [ARO Egress Restriction Guide](https://learn.microsoft.com/en-us/azure/openshift/howto-restrict-egress)
 - [ARO Private Cluster Guide](https://learn.microsoft.com/en-us/azure/openshift/howto-create-private-cluster-4x)

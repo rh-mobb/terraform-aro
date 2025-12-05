@@ -1,5 +1,5 @@
-# checkov:skip=CKV2_AZURE_31:Jumphost subnet uses NSG via network_interface_security_group_association; direct subnet NSG not required
 resource "azurerm_subnet" "jumphost_subnet" {
+  # checkov:skip=CKV2_AZURE_31:Jumphost subnet uses NSG via network_interface_security_group_association; direct subnet NSG not required
   count                = var.api_server_profile == "Private" || var.ingress_profile == "Private" ? 1 : 0
   name                 = "${local.name_prefix}-jumphost-subnet"
   resource_group_name  = azurerm_resource_group.main.name
@@ -20,8 +20,8 @@ resource "azurerm_public_ip" "jumphost_pip" {
   tags = var.tags
 }
 
-# checkov:skip=CKV_AZURE_119:Jumphost requires public IP for SSH access to private ARO clusters; security controlled via NSG
 resource "azurerm_network_interface" "jumphost_nic" {
+  # checkov:skip=CKV_AZURE_119:Jumphost requires public IP for SSH access to private ARO clusters; security controlled via NSG
   count               = var.api_server_profile == "Private" || var.ingress_profile == "Private" ? 1 : 0
   name                = "${local.name_prefix}-jumphost-nic"
   resource_group_name = azurerm_resource_group.main.name

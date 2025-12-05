@@ -26,10 +26,13 @@ provider "azurerm" {
   subscription_id = var.subscription_id
 }
 
+# Installer provider - only needed for service principal deployments
+# For managed identity deployments, ARM template uses current Azure credentials
+# NOTE: Providers can't use count, so we always define it but only use it when enable_managed_identities = false
 provider "azurerm" {
   alias           = "installer"
-  client_id       = terraform_data.installer_credentials.output["client_id"]
-  client_secret   = terraform_data.installer_credentials.output["client_secret"]
+  client_id       = try(terraform_data.installer_credentials[0].output["client_id"], "")
+  client_secret   = try(terraform_data.installer_credentials[0].output["client_secret"], "")
   subscription_id = data.azurerm_client_config.current.subscription_id
   tenant_id       = data.azurerm_client_config.current.tenant_id
 

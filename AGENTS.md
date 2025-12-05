@@ -137,7 +137,7 @@ This project follows the design outlined in DESIGN.md. All practices below suppo
 - **Separate installer and cluster service principals**
 - **Use custom roles** with minimal required permissions
 
-**Current Status:** ✅ Uses `terraform-aro-permissions` module with minimal permissions.
+**Current Status:** ✅ Uses vendored `terraform-aro-permissions` module (v0.2.1) with minimal permissions. Module located at `./modules/aro-permissions/`.
 
 ## ARO Platform Standards
 
@@ -225,7 +225,7 @@ This project serves as an example/demo tool. Security standards are applied cont
 1. **File Organization:** Flat structure by resource type (acceptable for project size)
 2. **Naming Convention:** `${local.name_prefix}-<resource-type>-<identifier>`
 3. **Conditional Resources:** Use `count` for optional components
-4. **Service Principal Management:** External module (`terraform-aro-permissions`)
+4. **Service Principal Management:** Vendored module (`./modules/aro-permissions/` - terraform-aro-permissions v0.2.1)
 5. **Tagging:** Default tags with override capability
 
 ### Legacy Exceptions

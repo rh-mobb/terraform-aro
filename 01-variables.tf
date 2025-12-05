@@ -229,3 +229,15 @@ variable "jumphost_ssh_private_key_path" {
   default     = "~/.ssh/id_rsa"
   description = "Path to the SSH private key file for jumphost VM access. Default: ~/.ssh/id_rsa. For CI/CD, set to a dummy file path or create a temporary key."
 }
+
+variable "enable_managed_identities" {
+  type        = bool
+  default     = false
+  description = <<EOF
+  Enable Azure Red Hat OpenShift managed identities (preview feature).
+  When enabled, the cluster uses user-assigned managed identities instead of service principals.
+  This feature is currently in tech preview and requires ARM template deployment.
+  The aro-permissions module will create 9 managed identities when this is enabled.
+  Default: false (uses service principals)
+  EOF
+}

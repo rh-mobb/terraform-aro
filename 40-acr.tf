@@ -1,8 +1,8 @@
 # Azure Container Registry (ACR) in Private ARO Clusters
 # https://learn.microsoft.com/en-us/azure/container-registry/container-registry-private-link
 
-# checkov:skip=CKV2_AZURE_31:Private endpoint subnet uses private endpoints for ACR; NSG not applicable for private endpoints
 resource "azurerm_subnet" "private_endpoint_subnet" {
+  # checkov:skip=CKV2_AZURE_31:Private endpoint subnet uses private endpoints for ACR; NSG not applicable for private endpoints
   count                             = var.acr_private ? 1 : 0
   name                              = "PrivateEndpoint-subnet"
   resource_group_name               = azurerm_resource_group.main.name

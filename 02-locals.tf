@@ -28,3 +28,10 @@ locals {
 locals {
   aro_version = var.aro_version != null && var.aro_version != "" ? var.aro_version : data.external.aro_latest_version[0].result.version
 }
+
+# Managed identity resource IDs (when enable_managed_identities = true)
+# These reference the managed identities created by the aro-managed-identity-permissions module
+locals {
+  managed_identity_ids           = var.enable_managed_identities ? module.aro_managed_identity_permissions[0].managed_identity_ids : {}
+  managed_identity_principal_ids = var.enable_managed_identities ? module.aro_managed_identity_permissions[0].managed_identity_principal_ids : {}
+}

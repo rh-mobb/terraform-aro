@@ -25,9 +25,15 @@ resource "terraform_data" "aro_permission_wait" {
   ]
 }
 
-# checkov:skip=CKV_TF_1:Module uses semantic version tag (v0.2.1) for stability; commit hash would require frequent updates
+# Service Principal Permissions Module (when managed identities are disabled)
+# Vendored module: terraform-aro-permissions v0.2.1 (modernized)
+# Original source: https://github.com/rh-mobb/terraform-aro-permissions.git?ref=v0.2.1
+# NOTE: Module has been modernized to remove provider blocks, allowing count/for_each usage
+# NOTE: depends_on cluster ensures cluster is deleted FIRST during destroy (reverse dependency order)
 module "aro_permissions" {
-  source = "git::https://github.com/rh-mobb/terraform-aro-permissions.git?ref=v0.2.1"
+  count = var.enable_managed_identities ? 0 : 1
+
+  source = "./modules/aro-permissions"
 
   # NOTE: terraform installation == 'api' installation_type (as opposed to 'cli')
   installation_type = "api"
@@ -83,21 +89,63 @@ module "aro_permissions" {
   tenant_id       = data.azurerm_client_config.current.tenant_id
 }
 
+# Managed Identity Permissions Module (when managed identities are enabled)
+# Simplified module with explicit role assignments - no loops or complex count logic
+# NOTE: This module is only used when enable_managed_identities = true
+# NOTE: depends_on cluster ensures cluster is deleted FIRST during destroy (reverse dependency order)
+module "aro_managed_identity_permissions" {
+  count = var.enable_managed_identities ? 1 : 0
+
+  source = "./modules/aro-managed-identity-permissions"
+
+  cluster_name           = terraform_data.aro_permission_wait.output.cluster_name
+  vnet                   = azurerm_virtual_network.main.name
+  vnet_resource_group    = azurerm_resource_group.main.name
+  network_security_group = azurerm_network_security_group.aro.name
+
+  aro_resource_group = {
+    name   = azurerm_resource_group.main.name
+    create = false
+  }
+
+  # set custom permissions
+  nat_gateways = []
+  subnets      = [azurerm_subnet.control_plane_subnet.name, azurerm_subnet.machine_subnet.name]
+  route_tables = var.restrict_egress_traffic ? [azurerm_route_table.firewall_rt[0].name] : []
+
+  # use custom roles with minimal permissions
+  minimal_network_role = "${var.cluster_name}-network"
+
+  # explicitly set location, subscription id and tenant id
+  location        = var.location
+  subscription_id = data.azurerm_client_config.current.subscription_id
+  tenant_id       = data.azurerm_client_config.current.tenant_id
+
+  # apply tags to all managed identities
+  tags = var.tags
+
+  enabled = true
+}
+
 #
 # NOTE: for whatever reason, in order for the installer provider to consume the password we create in the aro_permissions
 #       module, we must sleep here and let things calm down first and pass it through a 'terraform_data' resource (it
 #       fails the first time if attempting to use directly but succeeds when continuing to apply)
 #
 resource "time_sleep" "wait" {
+  count = var.enable_managed_identities ? 0 : 1
+
   create_duration = "10s"
 
-  depends_on = [module.aro_permissions]
+  depends_on = [module.aro_permissions[0]]
 }
 
 resource "terraform_data" "installer_credentials" {
+  count = var.enable_managed_identities ? 0 : 1
+
   input = {
-    client_id     = module.aro_permissions.installer_service_principal_client_id
-    client_secret = module.aro_permissions.installer_service_principal_client_secret
+    client_id     = module.aro_permissions[0].installer_service_principal_client_id
+    client_secret = module.aro_permissions[0].installer_service_principal_client_secret
   }
 
   depends_on = [time_sleep.wait]

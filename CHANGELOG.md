@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- ARO Managed Identities support (preview feature)
+  - New `enable_managed_identities` variable to enable managed identity deployment
+  - ARM template deployment (`templates/aro-cluster-managed-identity.json`) for managed identity clusters
+  - Conditional cluster deployment: uses ARM template when managed identities enabled, Terraform resource otherwise
+  - aro-permissions module outputs for managed identity resource IDs and principal IDs
+  - Updated outputs to support both service principal and managed identity deployments
+  - Documentation for managed identities feature (README.md, DESIGN.md)
+
+### Changed
+- `azurerm_redhat_openshift_cluster` resource is now conditional (count = 0 when managed identities enabled)
+- Cluster deployment method switches based on `enable_managed_identities` variable
+- Outputs now handle both deployment methods transparently
+
 ## [1.0.0] - 2024-12-01
 
 ### Added
@@ -17,8 +33,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Includes Terraform, tflint, and checkov setup
   - Caches Terraform providers for faster runs
 - Terraform outputs: `cluster_name` and `resource_group_name` for easier cluster management
+- Vendored `terraform-aro-permissions` module (v0.2.1) into `./modules/aro-permissions/`
+  - Removes external git dependency
+  - Faster terraform init
+  - Self-contained repository
+  - Original source documented in module source comment
 - Checkov inline suppressions with justifications:
-  - CKV_TF_1: Module uses semantic version tags for stability
   - CKV_AZURE_119: Jumphost requires public IP for private cluster access
   - CKV2_AZURE_31: Subnets use NSG via associations or private endpoints
 - Terraform `required_version` constraint: `>= 1.12`
