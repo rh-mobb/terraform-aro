@@ -1,0 +1,340 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "clusterName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the ARO cluster"
+      }
+    },
+    "location": {
+      "type": "string",
+      "metadata": {
+        "description": "Azure region where the cluster will be deployed"
+      }
+    },
+    "resourceGroupName": {
+      "type": "string",
+      "metadata": {
+        "description": "Resource group name for the ARO cluster"
+      }
+    },
+    "managedResourceGroupName": {
+      "type": "string",
+      "metadata": {
+        "description": "Managed resource group name for ARO cluster resources"
+      }
+    },
+    "domain": {
+      "type": "string",
+      "metadata": {
+        "description": "Custom domain for the ARO cluster"
+      }
+    },
+    "pullSecret": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Red Hat pull secret (JSON string)"
+      }
+    },
+    "version": {
+      "type": "string",
+      "metadata": {
+        "description": "ARO cluster version"
+      }
+    },
+    "podCidr": {
+      "type": "string",
+      "metadata": {
+        "description": "CIDR block for Kubernetes pods"
+      }
+    },
+    "serviceCidr": {
+      "type": "string",
+      "metadata": {
+        "description": "CIDR block for Kubernetes services"
+      }
+    },
+    "masterVmSize": {
+      "type": "string",
+      "metadata": {
+        "description": "VM size for control plane nodes"
+      }
+    },
+    "masterSubnetId": {
+      "type": "string",
+      "metadata": {
+        "description": "Subnet ID for control plane nodes"
+      }
+    },
+    "workerVmSize": {
+      "type": "string",
+      "metadata": {
+        "description": "VM size for worker nodes"
+      }
+    },
+    "workerDiskSizeGB": {
+      "type": "int",
+      "metadata": {
+        "description": "Disk size in GB for worker nodes"
+      }
+    },
+    "workerNodeCount": {
+      "type": "int",
+      "metadata": {
+        "description": "Number of worker nodes"
+      }
+    },
+    "workerSubnetId": {
+      "type": "string",
+      "metadata": {
+        "description": "Subnet ID for worker nodes"
+      }
+    },
+    "apiServerVisibility": {
+      "type": "string",
+      "allowedValues": ["Public", "Private"],
+      "metadata": {
+        "description": "API server visibility"
+      }
+    },
+    "ingressVisibility": {
+      "type": "string",
+      "allowedValues": ["Public", "Private"],
+      "metadata": {
+        "description": "Ingress visibility"
+      }
+    },
+    "outboundType": {
+      "type": "string",
+      "allowedValues": ["Loadbalancer", "UserDefinedRouting"],
+      "metadata": {
+        "description": "Outbound type for egress traffic"
+      }
+    },
+    "managedIdentityAroServiceId": {
+      "type": "string",
+      "metadata": {
+        "description": "Resource ID of aro-service managed identity"
+      }
+    },
+    "managedIdentityCloudControllerManagerId": {
+      "type": "string",
+      "metadata": {
+        "description": "Resource ID of cloud-controller-manager managed identity"
+      }
+    },
+    "managedIdentityCloudNetworkConfigId": {
+      "type": "string",
+      "metadata": {
+        "description": "Resource ID of cloud-network-config managed identity"
+      }
+    },
+    "managedIdentityClusterId": {
+      "type": "string",
+      "metadata": {
+        "description": "Resource ID of cluster managed identity"
+      }
+    },
+    "managedIdentityDiskCsiDriverId": {
+      "type": "string",
+      "metadata": {
+        "description": "Resource ID of disk-csi-driver managed identity"
+      }
+    },
+    "managedIdentityFileCsiDriverId": {
+      "type": "string",
+      "metadata": {
+        "description": "Resource ID of file-csi-driver managed identity"
+      }
+    },
+    "managedIdentityImageRegistryId": {
+      "type": "string",
+      "metadata": {
+        "description": "Resource ID of image-registry managed identity"
+      }
+    },
+    "managedIdentityIngressId": {
+      "type": "string",
+      "metadata": {
+        "description": "Resource ID of ingress managed identity"
+      }
+    },
+    "managedIdentityMachineApiId": {
+      "type": "string",
+      "metadata": {
+        "description": "Resource ID of machine-api managed identity"
+      }
+    },
+    "managedIdentityAroServicePrincipalId": {
+      "type": "string",
+      "metadata": {
+        "description": "Principal ID of aro-service managed identity"
+      }
+    },
+    "managedIdentityCloudControllerManagerPrincipalId": {
+      "type": "string",
+      "metadata": {
+        "description": "Principal ID of cloud-controller-manager managed identity"
+      }
+    },
+    "managedIdentityCloudNetworkConfigPrincipalId": {
+      "type": "string",
+      "metadata": {
+        "description": "Principal ID of cloud-network-config managed identity"
+      }
+    },
+    "managedIdentityDiskCsiDriverPrincipalId": {
+      "type": "string",
+      "metadata": {
+        "description": "Principal ID of disk-csi-driver managed identity"
+      }
+    },
+    "managedIdentityFileCsiDriverPrincipalId": {
+      "type": "string",
+      "metadata": {
+        "description": "Principal ID of file-csi-driver managed identity"
+      }
+    },
+    "managedIdentityImageRegistryPrincipalId": {
+      "type": "string",
+      "metadata": {
+        "description": "Principal ID of image-registry managed identity"
+      }
+    },
+    "managedIdentityIngressPrincipalId": {
+      "type": "string",
+      "metadata": {
+        "description": "Principal ID of ingress managed identity"
+      }
+    },
+    "managedIdentityMachineApiPrincipalId": {
+      "type": "string",
+      "metadata": {
+        "description": "Principal ID of machine-api managed identity"
+      }
+    },
+    "tags": {
+      "type": "object",
+      "defaultValue": {},
+      "metadata": {
+        "description": "Tags to apply to resources"
+      }
+    },
+    "fips": {
+      "type": "string",
+      "defaultValue": "Disabled",
+      "allowedValues": ["Enabled", "Disabled"],
+      "metadata": {
+        "description": "Specify if FIPS validated crypto modules are used"
+      }
+    }
+  },
+  "variables": {
+    "resourceGroupId": "[format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, parameters('managedResourceGroupName'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.RedHatOpenShift/openShiftClusters",
+      "apiVersion": "2024-08-12-preview",
+      "name": "[parameters('clusterName')]",
+      "location": "[parameters('location')]",
+      "tags": "[parameters('tags')]",
+      "properties": {
+        "clusterProfile": {
+          "domain": "[parameters('domain')]",
+          "resourceGroupId": "[variables('resourceGroupId')]",
+          "version": "[parameters('version')]",
+          "fipsValidatedModules": "[parameters('fips')]",
+          "pullSecret": "[parameters('pullSecret')]"
+        },
+        "networkProfile": {
+          "podCidr": "[parameters('podCidr')]",
+          "serviceCidr": "[parameters('serviceCidr')]"
+        },
+        "masterProfile": {
+          "vmSize": "[parameters('masterVmSize')]",
+          "subnetId": "[parameters('masterSubnetId')]",
+          "encryptionAtHost": "Disabled"
+        },
+        "workerProfiles": [
+          {
+            "name": "worker",
+            "count": "[parameters('workerNodeCount')]",
+            "diskSizeGB": "[parameters('workerDiskSizeGB')]",
+            "vmSize": "[parameters('workerVmSize')]",
+            "subnetId": "[parameters('workerSubnetId')]",
+            "encryptionAtHost": "Disabled"
+          }
+        ],
+        "apiserverProfile": {
+          "visibility": "[parameters('apiServerVisibility')]"
+        },
+        "ingressProfiles": [
+          {
+            "name": "default",
+            "visibility": "[parameters('ingressVisibility')]"
+          }
+        ],
+        "platformWorkloadIdentityProfile": {
+          "platformWorkloadIdentities": {
+            "cloud-controller-manager": {
+              "resourceId": "[parameters('managedIdentityCloudControllerManagerId')]"
+            },
+            "ingress": {
+              "resourceId": "[parameters('managedIdentityIngressId')]"
+            },
+            "machine-api": {
+              "resourceId": "[parameters('managedIdentityMachineApiId')]"
+            },
+            "disk-csi-driver": {
+              "resourceId": "[parameters('managedIdentityDiskCsiDriverId')]"
+            },
+            "cloud-network-config": {
+              "resourceId": "[parameters('managedIdentityCloudNetworkConfigId')]"
+            },
+            "image-registry": {
+              "resourceId": "[parameters('managedIdentityImageRegistryId')]"
+            },
+            "file-csi-driver": {
+              "resourceId": "[parameters('managedIdentityFileCsiDriverId')]"
+            },
+            "aro-operator": {
+              "resourceId": "[parameters('managedIdentityAroServiceId')]"
+            }
+          }
+        }
+      },
+      "identity": {
+        "type": "UserAssigned",
+        "userAssignedIdentities": {
+          "[parameters('managedIdentityClusterId')]": {}
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "clusterId": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.RedHatOpenShift/openShiftClusters', parameters('clusterName'))]"
+    },
+    "consoleUrl": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.RedHatOpenShift/openShiftClusters', parameters('clusterName')), '2024-08-12-preview').consoleProfile.url]"
+    },
+    "apiServerUrl": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.RedHatOpenShift/openShiftClusters', parameters('clusterName')), '2024-08-12-preview').apiserverProfile.url]"
+    },
+    "apiServerIp": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.RedHatOpenShift/openShiftClusters', parameters('clusterName')), '2024-08-12-preview').apiserverProfile.ip]"
+    },
+    "ingressIp": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.RedHatOpenShift/openShiftClusters', parameters('clusterName')), '2024-08-12-preview').ingressProfiles[0].ip]"
+    }
+  }
+}

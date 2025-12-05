@@ -4,3 +4,4 @@
 *.plan
 terraform.tfvars
 sshuttle.pid
+.history
