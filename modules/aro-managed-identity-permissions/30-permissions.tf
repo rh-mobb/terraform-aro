@@ -227,7 +227,7 @@ resource "azurerm_role_assignment" "subnet_image_registry" {
 
 #
 # Managed Identity Permissions - Route Tables (if route tables exist)
-# aro-service, file-csi-driver, machine-api need route table permissions
+# aro-service, cloud-controller-manager, file-csi-driver, machine-api need route table permissions
 #
 # Route table role assignments - create a map for easier lookup
 locals {
@@ -241,6 +241,16 @@ resource "azurerm_role_assignment" "route_table_aro_service" {
   role_definition_id               = local.has_custom_network_role ? azurerm_role_definition.network_route_tables[index(var.route_tables, each.key)].role_definition_resource_id : null
   role_definition_name             = local.has_custom_network_role ? null : "Network Contributor"
   principal_id                     = azurerm_user_assigned_identity.aro_service[0].principal_id
+  skip_service_principal_aad_check = true
+}
+
+resource "azurerm_role_assignment" "route_table_cloud_controller_manager" {
+  for_each = var.enabled ? local.route_table_map : {}
+
+  scope                            = each.value
+  role_definition_id               = local.has_custom_network_role ? azurerm_role_definition.network_route_tables[index(var.route_tables, each.key)].role_definition_resource_id : null
+  role_definition_name             = local.has_custom_network_role ? null : "Network Contributor"
+  principal_id                     = azurerm_user_assigned_identity.cloud_controller_manager[0].principal_id
   skip_service_principal_aad_check = true
 }
 
