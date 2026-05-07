@@ -34,6 +34,7 @@ resource "azurerm_firewall" "firewall" {
   resource_group_name = azurerm_resource_group.main.name
   sku_name            = "AZFW_VNet"
   sku_tier            = "Standard"
+  tags                = var.tags
 
   ip_configuration {
     name                 = "${var.name_prefix}-fw-ip-config"

@@ -23,7 +23,7 @@ resource "azurerm_redhat_openshift_cluster" "cluster" {
   name                = var.cluster_name
   location            = module.aro_network.location
   resource_group_name = module.aro_network.resource_group_name
-  tags                = var.tags
+  tags                = local.tags
 
   lifecycle {
     # Ensure cluster is replaced before dependent resources during updates
@@ -88,7 +88,7 @@ module "aro_cluster_azapi" {
   resource_group_name         = module.aro_network.resource_group_name
   managed_resource_group_name = "${module.aro_network.resource_group_name}-managed"
   location                    = module.aro_network.location
-  tags                        = var.tags
+  tags                        = local.tags
 
   domain        = local.domain
   aro_version   = local.aro_version

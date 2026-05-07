@@ -12,9 +12,21 @@ locals {
   name_prefix = var.cluster_name
 }
 
+# Tags applied to taggable Azure resources.
+# User-provided tags override defaults, while ManagedBy remains consistent.
+locals {
+  tags = merge(
+    {
+      environment = "development"
+      ManagedBy   = "Terraform"
+    },
+    var.tags
+  )
+}
+
 # Pull secret - read from file if path provided, otherwise null
 locals {
-  pull_secret = var.pull_secret_path != null && var.pull_secret_path != "" ? file(var.pull_secret_path) : null
+  pull_secret = var.pull_secret_path != null && var.pull_secret_path != "" ? file(pathexpand(var.pull_secret_path)) : null
 }
 
 # Service principal names for IAM module

@@ -5,7 +5,7 @@ module "aro_network" {
 
   name_prefix                    = local.name_prefix
   location                       = var.location
-  tags                           = var.tags
+  tags                           = local.tags
   aro_virtual_network_cidr_block = var.aro_virtual_network_cidr_block
   aro_control_subnet_cidr_block  = var.aro_control_subnet_cidr_block
   aro_machine_subnet_cidr_block  = var.aro_machine_subnet_cidr_block
