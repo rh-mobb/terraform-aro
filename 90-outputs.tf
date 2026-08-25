@@ -6,7 +6,7 @@
 output "console_url" {
   description = "The URL of the ARO cluster web console"
   value = var.enable_managed_identities ? try(
-    module.aro_cluster_azapi[0].console_url,
+    azurerm_redhat_openshift_cluster.mi_cluster[0].console_url,
     null
   ) : try(azurerm_redhat_openshift_cluster.cluster[0].console_url, null)
 }
@@ -14,7 +14,7 @@ output "console_url" {
 output "api_url" {
   description = "The URL of the ARO cluster API server"
   value = var.enable_managed_identities ? try(
-    module.aro_cluster_azapi[0].api_server_url,
+    azurerm_redhat_openshift_cluster.mi_cluster[0].api_server_profile[0].url,
     null
   ) : try(azurerm_redhat_openshift_cluster.cluster[0].api_server_profile[0].url, null)
 }
@@ -22,7 +22,7 @@ output "api_url" {
 output "api_server_ip" {
   description = "The IP address of the ARO cluster API server"
   value = var.enable_managed_identities ? try(
-    module.aro_cluster_azapi[0].api_server_ip,
+    azurerm_redhat_openshift_cluster.mi_cluster[0].api_server_profile[0].ip_address,
     null
   ) : try(azurerm_redhat_openshift_cluster.cluster[0].api_server_profile[0].ip_address, null)
 }
@@ -30,7 +30,7 @@ output "api_server_ip" {
 output "ingress_ip" {
   description = "The IP address of the ARO cluster ingress controller"
   value = var.enable_managed_identities ? try(
-    module.aro_cluster_azapi[0].ingress_ip,
+    azurerm_redhat_openshift_cluster.mi_cluster[0].ingress_profile[0].ip_address,
     null
   ) : try(azurerm_redhat_openshift_cluster.cluster[0].ingress_profile[0].ip_address, null)
 }

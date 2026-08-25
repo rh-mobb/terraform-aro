@@ -22,7 +22,13 @@ resource "azurerm_subnet" "control_plane_subnet" {
   # private_endpoint_network_policies     = "Disabled"
   private_link_service_network_policies_enabled = false
 
-  service_endpoints = ["Microsoft.Storage", "Microsoft.ContainerRegistry"]
+  service_endpoint {
+    service = "Microsoft.Storage"
+  }
+
+  service_endpoint {
+    service = "Microsoft.ContainerRegistry"
+  }
 }
 
 resource "azurerm_subnet" "machine_subnet" {
@@ -35,7 +41,13 @@ resource "azurerm_subnet" "machine_subnet" {
   # private_endpoint_network_policies     = "Disabled"
   private_link_service_network_policies_enabled = false
 
-  service_endpoints = ["Microsoft.Storage", "Microsoft.ContainerRegistry"]
+  service_endpoint {
+    service = "Microsoft.Storage"
+  }
+
+  service_endpoint {
+    service = "Microsoft.ContainerRegistry"
+  }
 }
 
 resource "azurerm_network_security_group" "aro" {
@@ -107,14 +119,14 @@ resource "azurerm_network_security_rule" "aro_inbound_https" {
 # TODO: Investigate NSG support for managed identity clusters - currently NSGs cannot be attached to subnets
 #       See: https://learn.microsoft.com/en-us/azure/openshift/howto-create-openshift-cluster?pivots=aro-deploy-az-arm-template
 resource "azurerm_subnet_network_security_group_association" "control_plane" {
-  count = var.enable_managed_identities ? 0 : 1
+  #count = var.enable_managed_identities ? 0 : 1
 
   subnet_id                 = azurerm_subnet.control_plane_subnet.id
   network_security_group_id = azurerm_network_security_group.aro.id
 }
 
 resource "azurerm_subnet_network_security_group_association" "machine" {
-  count = var.enable_managed_identities ? 0 : 1
+  #count = var.enable_managed_identities ? 0 : 1
 
   subnet_id                 = azurerm_subnet.machine_subnet.id
   network_security_group_id = azurerm_network_security_group.aro.id

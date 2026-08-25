@@ -20,13 +20,12 @@ resource "azurerm_private_dns_zone" "dns" {
 }
 
 resource "azurerm_private_dns_zone_virtual_network_link" "dns_link" {
-  count                 = var.acr_private ? 1 : 0
-  name                  = "acr-dns-link"
-  resource_group_name   = module.aro_network.resource_group_name
-  private_dns_zone_name = azurerm_private_dns_zone.dns[0].name
-  virtual_network_id    = module.aro_network.virtual_network_id
-  registration_enabled  = false
-  tags                  = local.tags
+  count                = var.acr_private ? 1 : 0
+  name                 = "acr-dns-link"
+  private_dns_zone_id  = azurerm_private_dns_zone.dns[0].id
+  virtual_network_id   = module.aro_network.virtual_network_id
+  registration_enabled = false
+  tags                 = local.tags
 }
 
 resource "random_string" "acr" {

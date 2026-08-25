@@ -29,7 +29,9 @@ resource "azurerm_subnet" "jumphost_subnet" {
   resource_group_name  = module.aro_network.resource_group_name
   virtual_network_name = module.aro_network.virtual_network_name
   address_prefixes     = [var.aro_jumphost_subnet_cidr_block]
-  service_endpoints    = ["Microsoft.ContainerRegistry"]
+  service_endpoint {
+    service = "Microsoft.ContainerRegistry"
+  }
 }
 
 # Due to remote-exec issue Static allocation needs
